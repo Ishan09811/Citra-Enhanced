@@ -229,7 +229,11 @@ class SetupFragment : Fragment() {
                         if (PermissionsHandler.hasWriteAccess(requireContext())) {
                             StepState.STEP_COMPLETE
                         } else {
-                            StepState.STEP_INCOMPLETE
+                            userDirCallback = it
+                            Borked3DSDirectoryHelper(requireActivity()).showBorked3DSDirectoryDialog(
+                                result,
+                                userDirCallback
+                            )
                         }
                     },
                     R.string.cannot_skip,
