@@ -231,7 +231,7 @@ class SetupFragment : Fragment() {
                         } else {
                             userDirCallback = it
                             Borked3DSDirectoryHelper(requireActivity()).showBorked3DSDirectoryDialog(
-                                result,
+                                requireContext().getExternalFilesDir(null).toURI(),
                                 userDirCallback
                             )
                         }
