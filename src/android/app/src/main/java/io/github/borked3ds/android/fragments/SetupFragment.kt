@@ -229,9 +229,14 @@ class SetupFragment : Fragment() {
                         if (PermissionsHandler.hasWriteAccess(requireContext())) {
                             StepState.STEP_COMPLETE
                         } else {
-                            userDirCallback = it
+                            userDirCallback = object : SetupCallback {
+                                override fun onStepCompleted() {
+                                    StepState.STEP_COMPLETE
+                                }
+                            }
+
                             Borked3DSDirectoryHelper(requireActivity()).showBorked3DSDirectoryDialog(
-                                requireContext().getExternalFilesDir(null).toURI(),
+                                Uri.parse(requireContext().getExternalFilesDir(null)?)?,
                                 userDirCallback
                             )
                         }
