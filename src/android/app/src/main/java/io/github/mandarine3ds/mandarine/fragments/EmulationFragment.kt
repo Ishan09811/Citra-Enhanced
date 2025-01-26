@@ -442,23 +442,37 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
     private fun togglePause() {
         if (emulationState.isPaused) {
             emulationState.unpause()
+            manuallyPaused = false
         } else {
             emulationState.pause()
+            manuallyPaused = true
         }
     }
 
     override fun onResume() {
         super.onResume()
         Choreographer.getInstance().postFrameCallback(this)
-        if (NativeLibrary.isRunning() && !manuallyPaused) {
+        if (NativeLibrary.isRunning()) {
             NativeLibrary.unPauseEmulation()
             return
         }
 
-        if (DirectoryInitialization.areMandarineDirectoriesReady() && !manuallyPaused) {
+        if (DirectoryInitialization.areMandarineDirectoriesReady()) {
             emulationState.run(emulationActivity.isActivityRecreated)
         } else {
             setupMandarineDirectoriesThenStartEmulation()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+       super.onSaveInstanceState(outState)
+       outState.putBoolean("manuallyPaused", manuallyPaused)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        savedInstanceState?.let {
+            manuallyPaused = it.getBoolean("manuallyPaused", false)
         }
     }
 
@@ -1338,6 +1352,10 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                 }
             }
             state = State.RUNNING
+            if (manuallyPaused) {
+                NativeLibrary.pauseEmulation()
+                state = State.PAUSED
+            }        
         }
 
         private enum class State {
