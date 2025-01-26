@@ -93,6 +93,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
     private val emulationViewModel: EmulationViewModel by activityViewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
 
+    private var manuallyPaused: Boolean = false
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is EmulationActivity) {
@@ -241,6 +243,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                 R.id.menu_emulation_pause -> {
                     if (emulationState.isPaused) {
                         emulationState.unpause()
+                        manuallyPaused = false
                         it.title = resources.getString(R.string.pause_emulation)
                         it.icon = ResourcesCompat.getDrawable(
                             resources,
@@ -249,6 +252,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                         )
                     } else {
                         emulationState.pause()
+                        manuallyPaused = true
                         it.title = resources.getString(R.string.resume_emulation)
                         it.icon = ResourcesCompat.getDrawable(
                             resources,
@@ -446,12 +450,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
     override fun onResume() {
         super.onResume()
         Choreographer.getInstance().postFrameCallback(this)
-        if (NativeLibrary.isRunning()) {
+        if (NativeLibrary.isRunning() && !manuallyPaused) {
             NativeLibrary.unPauseEmulation()
             return
         }
 
-        if (DirectoryInitialization.areMandarineDirectoriesReady()) {
+        if (DirectoryInitialization.areMandarineDirectoriesReady() && !manuallyPaused) {
             emulationState.run(emulationActivity.isActivityRecreated)
         } else {
             setupMandarineDirectoriesThenStartEmulation()
@@ -461,6 +465,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
     override fun onPause() {
         if (NativeLibrary.isRunning()) {
             emulationState.pause()
+            manuallyPaused = false
         }
         Choreographer.getInstance().removeFrameCallback(this)
         super.onPause()
