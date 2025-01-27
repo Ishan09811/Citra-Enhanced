@@ -1175,7 +1175,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         Log.debug("[EmulationFragment] Surface changed. Resolution: " + width + "x" + height)
-        emulationState.newSurface(holder.surface)
+        emulationState.newSurface(holder.surface, manuallyPaused)
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
@@ -1301,10 +1301,10 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
 
         // Surface callbacks
         @Synchronized
-        fun newSurface(surface: Surface?) {
+        fun newSurface(surface: Surface?, isManuallyPaused: Boolean = false) {
             this.surface = surface
             if (this.surface != null) {
-                runWithValidSurface()
+                runWithValidSurface(isManuallyPaused)
             }
         }
 
