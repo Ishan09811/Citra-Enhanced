@@ -458,7 +458,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
         }
 
         if (DirectoryInitialization.areMandarineDirectoriesReady()) {
-            emulationState.run(emulationActivity.isActivityRecreated)
+            emulationState.run(emulationActivity.isActivityRecreated, manuallyPaused)
         } else {
             setupMandarineDirectoriesThenStartEmulation()
         }
@@ -495,7 +495,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
         if (directoryInitializationState ===
             DirectoryInitializationState.MANDARINE_DIRECTORIES_INITIALIZED
         ) {
-            emulationState.run(emulationActivity.isActivityRecreated)
+            emulationState.run(emulationActivity.isActivityRecreated, manuallyPaused)
         } else if (directoryInitializationState ===
             DirectoryInitializationState.EXTERNAL_STORAGE_PERMISSION_NEEDED
         ) {
@@ -1284,7 +1284,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
         }
 
         @Synchronized
-        fun run(isActivityRecreated: Boolean) {
+        fun run(isActivityRecreated: Boolean, isManuallyPaused: Boolean = false) {
             if (isActivityRecreated) {
                 if (NativeLibrary.isRunning()) {
                     state = State.PAUSED
@@ -1295,7 +1295,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
 
             // If the surface is set, run now. Otherwise, wait for it to get set.
             if (surface != null) {
-                runWithValidSurface()
+                runWithValidSurface(isManuallyPaused)
             }
         }
 
@@ -1332,7 +1332,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
             }
         }
 
-        private fun runWithValidSurface() {
+        private fun runWithValidSurface(manuallyPaused: Boolean) {
             NativeLibrary.surfaceChanged(surface!!)
             when (state) {
                 State.STOPPED -> {
