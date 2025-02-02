@@ -5,7 +5,7 @@
 package io.github.mandarine3ds.mandarine.utils
 
 import android.view.View
-import android.text.TextUtils
+import android.widget.TextView
 import android.text.TextUtils
 import android.view.ViewGroup
 
