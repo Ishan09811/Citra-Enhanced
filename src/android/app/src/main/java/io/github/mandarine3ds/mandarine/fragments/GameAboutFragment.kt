@@ -23,6 +23,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.transition.MaterialSharedAxis
+import com.google.android.material.appbar.AppBarLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,6 +46,7 @@ import io.github.mandarine3ds.mandarine.utils.ViewUtils.updateMargins
 import io.github.mandarine3ds.mandarine.utils.collect
 import java.io.BufferedOutputStream
 import java.io.File
+import kotlin.math.abs
 
 class GameAboutFragment : Fragment() {
     private var _binding: FragmentGameAboutBinding? = null
@@ -80,6 +82,24 @@ class GameAboutFragment : Fragment() {
         (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.toolbar)
         (requireActivity() as? AppCompatActivity)?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         (requireActivity() as? AppCompatActivity)?.supportActionBar?.title = args.game.title
+
+        binding.appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+            val totalScrollRange = appBarLayout.totalScrollRange
+            val collapseThreshold = Math.abs(verticalOffset) == totalScrollRange
+
+            if (collapseThreshold) {
+                binding.toolbar.animate().alpha(1f).setDuration(300).start()
+                (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(true)
+            } else if (verticalOffset == 0) {
+                binding.toolbar.animate().alpha(0f).setDuration(300).start()
+                (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(false)
+            } else {
+                if (binding.toolbar.alpha < 1f) {
+                    binding.toolbar.animate().alpha(1f).setDuration(300).start()
+                }
+                (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(true) 
+            }
+        })
 
         val shortcutManager = requireActivity().getSystemService(ShortcutManager::class.java)
         binding.buttonShortcut.isEnabled = shortcutManager.isRequestPinShortcutSupported
