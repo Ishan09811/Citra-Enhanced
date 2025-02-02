@@ -1,8 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
@@ -66,26 +64,18 @@
         android:id="@+id/list_all"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:scrollbars="vertical"
         android:fadeScrollbars="false"
         android:clipToPadding="false"
         android:defaultFocusHighlightEnabled="false">
 
-        <LinearLayout
-            android:id="@+id/layout_all"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list_properties"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/list_properties"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:defaultFocusHighlightEnabled="false" />
-
-        </LinearLayout>
-
+            android:defaultFocusHighlightEnabled="false" />
+        
     </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
