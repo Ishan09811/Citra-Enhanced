@@ -175,25 +175,29 @@ object FileUtil {
      */
     @JvmStatic
     fun exists(path: String): Boolean {
-        var c: Cursor? = null
+        var cursor: Cursor? = null
         try {
             val uri = Uri.parse(path)
-            val columns = arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
-            c = context.contentResolver.query(
+            val columns = arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE)
+            cursor = context.contentResolver.query(
                 uri,
                 columns,
                 null,
                 null,
                 null
             )
-            return c!!.count > 0
+            if (cursor != null && cursor.moveToFirst()) {
+                val mimeType = cursor.getString(0)
+                return mimeType == DocumentsContract.Document.MIME_TYPE_DIR || cursor.count > 0
+            }
         } catch (e: Exception) {
-            Log.info("[FileUtil] Cannot find file from given path, error: " + e.message)
+            Log.warning("[FileUtil]: Cannot find folder/file from given path, error: ${e.message}")
         } finally {
-            closeQuietly(c)
+            closeQuietly(cursor)
         }
         return false
     }
+
 
     /**
      * Check whether given path is a directory
@@ -228,7 +232,10 @@ object FileUtil {
      */
     @JvmStatic
     fun getFilename(uri: Uri): String {
-        val columns = arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+        val columns = arrayOf(
+            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+            DocumentsContract.Document.COLUMN_MIME_TYPE
+        )
         var filename = ""
         var c: Cursor? = null
         try {
@@ -239,8 +246,15 @@ object FileUtil {
                 null,
                 null
             )
-            c!!.moveToNext()
-            filename = c.getString(0)
+            if (c != null && c.moveToFirst()) {
+                filename = c.getString(0)
+                val mimeType = c.getString(1)
+                if (DocumentsContract.Document.MIME_TYPE_DIR == mimeType) {
+                    Log.info("[FileUtil]: Uri points to a folder.")
+                } else {
+                    Log.info("[FileUtil]: Uri points to a file.")
+                }
+            }
         } catch (e: Exception) {
             Log.error("[FileUtil]: Cannot get file name, error: " + e.message)
         } finally {
@@ -456,6 +470,28 @@ object FileUtil {
         return false
     }
 
+    @JvmStatic
+    fun deleteDir(path: String): Boolean {
+        try {
+            val uri = Uri.parse(path)
+            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(uri))
+            val cursor = context.contentResolver.query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID), null, null, null)
+
+            cursor?.use {
+                while (it.moveToNext()) {
+                    val documentId = it.getString(0)
+                    val fileUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
+                    DocumentsContract.deleteDocument(context.contentResolver, fileUri)
+                }
+            }
+            DocumentsContract.deleteDocument(context.contentResolver, uri)
+            return true
+        } catch (e: Exception) {
+            Log.error("[FileUtil]: Cannot delete folder, error: ${e.message}")
+        }
+        return false
+    }
+
     @Throws(IOException::class)
     fun getBytesFromFile(file: DocumentFile): ByteArray {
         val uri = file.uri
@@ -512,6 +548,64 @@ object FileUtil {
                 entry = zis.nextEntry
             }
         }
+    }
+
+    
+    fun extractMod(zipUri: Uri, destinationUri: Uri, gameTitleId: String): Pair<Uri?, AddonsHelper.AddonInstallResult> {
+        val buffer = ByteArray(1024)
+        val contentResolver = context.contentResolver
+
+        val destinationDir = DocumentFile.fromTreeUri(context, destinationUri) ?: return Pair(null, AddonsHelper.AddonInstallResult.UnknownError)
+        var extractedFolderUri: Uri? = null
+
+        val zipFileName = DocumentFile.fromSingleUri(context, zipUri)?.name?.removeSuffix(".zip") ?: "ExtractedFolder"
+        var subFolder = destinationDir.findFile(zipFileName)
+        var foundRequiredFile = false
+
+        if (subFolder != null)
+            return Pair(null, AddonsHelper.AddonInstallResult.AlreadyInstalled) // mod is already installed
+        else subFolder = destinationDir.createDirectory(zipFileName) ?: return Pair(null, AddonsHelper.AddonInstallResult.UnknownError)
+
+        try {
+            contentResolver.openInputStream(zipUri)?.use { inputStream ->
+                val zipInputStream = ZipInputStream(BufferedInputStream(inputStream))
+                var entry: ZipEntry?
+
+                while (zipInputStream.nextEntry.also { entry = it } != null) {
+                    val entryName = entry!!.name ?: continue
+                    val sanitizedEntryName = entryName.replace("..", "").trim()
+
+                    if (entry!!.isDirectory) continue
+
+                    val parentDirName = sanitizedEntryName.substringBeforeLast("/", "")
+                    if (parentDirName == gameTitleId) {
+                        val fileName = sanitizedEntryName.substringAfterLast("/")
+                        if (fileName in AddonsHelper.requiredModFiles) {
+                            val file = subFolder.createFile("application/octet-stream", fileName)
+                            file?.uri?.let { fileUri ->
+                                contentResolver.openOutputStream(fileUri)?.use { output ->
+                                    var length: Int
+                                    while (zipInputStream.read(buffer).also { length = it } > 0) {
+                                        output.write(buffer, 0, length)
+                                    }
+                                }
+                            }
+                            foundRequiredFile = true
+                        }
+                    }
+                }
+                extractedFolderUri = subFolder.uri
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            return Pair(null, AddonsHelper.AddonInstallResult.UnknownError)
+        }
+        
+        if (!foundRequiredFile) {
+            subFolder.delete()
+            return Pair(null, AddonsHelper.AddonInstallResult.InvalidArchive)
+        }
+        return Pair(extractedFolderUri, AddonsHelper.AddonInstallResult.Success)
     }
 
     fun copyToExternalStorage(
@@ -571,6 +665,17 @@ object FileUtil {
         val fileName = getFilename(uri)
         return fileName.substring(fileName.lastIndexOf(".") + 1)
             .lowercase()
+    }
+
+    fun getModsDir(titleId: String) : DocumentFile {
+        val root = DocumentFile.fromTreeUri(
+            context,
+            Uri.parse(DirectoryInitialization.userPath)
+        )
+        val loadDir = root!!.findFile("load") ?: root!!.createDirectory("load")
+        val modsParentDir = loadDir!!.findFile("mods") ?: loadDir!!.createDirectory("mods")
+        val modsDir = modsParentDir!!.findFile(titleId) ?: modsParentDir!!.createDirectory(titleId)
+        return modsDir!!
     }
 
     @Throws(IOException::class)

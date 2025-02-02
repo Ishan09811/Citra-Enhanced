@@ -43,12 +43,6 @@ class GamesFragment : Fragment() {
     private val gamesViewModel: GamesViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
 
-    private val openImageLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        adapter.handleImageResult(uri)
-    }
-
     private lateinit var adapter: GameAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,13 +64,7 @@ class GamesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         homeViewModel.setNavigationVisibility(visible = true, animated = true)
         homeViewModel.setStatusBarShadeVisibility(visible = true)
-        val inflater = LayoutInflater.from(requireContext())
-
-        adapter = GameAdapter(
-            requireActivity() as AppCompatActivity,
-            inflater,
-            openImageLauncher
-        )
+        adapter = GameAdapter(requireActivity() as AppCompatActivity)
 
         binding.gridGames.apply {
             layoutManager = GridLayoutManager(

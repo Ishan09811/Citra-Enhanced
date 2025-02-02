@@ -5,6 +5,9 @@
 package io.github.mandarine3ds.mandarine.utils
 
 import android.view.View
+import android.widget.TextView
+import android.text.TextUtils
+import android.view.ViewGroup
 
 object ViewUtils {
     fun showView(view: View, length: Long = 300) {
@@ -49,5 +52,43 @@ object ViewUtils {
         }.withEndAction {
             view.visibility = View.INVISIBLE
         }.start()
+    }
+
+    /**
+     * Starts a marquee on some text.
+     * @param delay Optional parameter for changing the start delay. 3 seconds of delay by default.
+     */
+    fun TextView.marquee(delay: Long = 3000) {
+        ellipsize = null
+        marqueeRepeatLimit = -1
+        isSingleLine = true
+        postDelayed({
+            ellipsize = TextUtils.TruncateAt.MARQUEE
+            isSelected = true
+        }, delay)
+    }
+
+    fun View.updateMargins(
+        left: Int = -1,
+        top: Int = -1,
+        right: Int = -1,
+        bottom: Int = -1
+    ) {
+        val layoutParams = this.layoutParams as ViewGroup.MarginLayoutParams
+        layoutParams.apply {
+            if (left != -1) {
+                leftMargin = left
+            }
+            if (top != -1) {
+                topMargin = top
+            }
+            if (right != -1) {
+                rightMargin = right
+            }
+            if (bottom != -1) {
+                bottomMargin = bottom
+            }
+        }
+        this.layoutParams = layoutParams
     }
 }

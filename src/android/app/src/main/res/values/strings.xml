@@ -482,7 +482,7 @@
     <string name="preparing_shaders">Preparing Shaders</string>
     <string name="building_shaders">Building Shaders</string>
 
-    <!-- About Game Dialog -->
+    <!-- About Game Fragment -->
     <string name="play">Play</string>
     <string name="shortcut">Shortcut</string>
     <string name="shortcut_name">Shortcut Name</string>
@@ -501,6 +501,15 @@
     <string name="game_context_open_extra">Open Extra Folder</string>
     <string name="game_context_uninstall_dlc">Uninstall DLC</string>
     <string name="game_context_uninstall_updates">Uninstall Updates</string>
+    <string name="add_ons">Add-ons</string>
+    <string name="add_ons_description">mods, updates, cheats, custom texture</string>
+    <string name="info">Info</string>
+    <string name="info_description">Title ID, company, version</string>
+    <string name="name">Name</string>
+    <string name="title_id">Title ID</string>
+    <string name="author">Author</string>
+    <string name="version">Version</string>
+    <string name="path">Path</string>
 
     <!-- Cheats -->
     <string name="cheats">Cheats</string>

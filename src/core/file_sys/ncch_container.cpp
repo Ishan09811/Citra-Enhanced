@@ -358,10 +358,19 @@ Loader::ResultStatus NCCHContainer::Load() {
             const auto mods_path =
                 fmt::format("{}mods/{:016X}/", FileUtil::GetUserPath(FileUtil::UserPath::LoadDir),
                             GetModId(ncch_header.program_id));
-            const std::array<std::string, 2> exheader_override_paths{{
+            std::vector<std::string> exheader_override_paths{
                 mods_path + "exheader.bin",
                 filepath + ".exheader",
-            }};
+            };
+
+            #ifdef ANDROID
+            const auto mod_dirs = FileUtil::GetModsDirs(ncch_header.program_id);
+            for (const auto& [path, apply] : mod_dirs) {
+                if (apply) {
+                    exheader_override_paths.push_back(path + "/exheader.bin");
+                }
+            }
+            #endif
 
             bool has_exheader_override = false;
             for (const auto& path : exheader_override_paths) {
@@ -591,7 +600,8 @@ Loader::ResultStatus NCCHContainer::ApplyCodePatch(std::vector<u8>& code) const 
             fmt::format("{}luma/titles/{:016X}/code.ips",
                         FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir), ncch_header.program_id);
     }
-    const std::array<PatchLocation, 7> patch_paths{{
+
+    std::vector<PatchLocation> patch_paths = {
         {mods_path + "exefs/code.ips", Patch::ApplyIpsPatch},
         {mods_path + "exefs/code.bps", Patch::ApplyBpsPatch},
         {mods_path + "code.ips", Patch::ApplyIpsPatch},
@@ -599,9 +609,26 @@ Loader::ResultStatus NCCHContainer::ApplyCodePatch(std::vector<u8>& code) const 
         {luma_ips_location, Patch::ApplyIpsPatch},
         {filepath + ".exefsdir/code.ips", Patch::ApplyIpsPatch},
         {filepath + ".exefsdir/code.bps", Patch::ApplyBpsPatch},
-    }};
+    };
+
+    #ifdef ANDROID
+    const auto mod_dirs = FileUtil::GetModsDirs(ncch_header.program_id);
+    for (const auto& [path, apply] : mod_dirs) {
+        if (apply) {
+            patch_paths.push_back({path + "/code.ips", Patch::ApplyIpsPatch});
+            patch_paths.push_back({path + "/code.bps", Patch::ApplyBpsPatch});
+        }
+    }
+    #endif
+
+    bool patch_applied = false;
 
     for (const PatchLocation& info : patch_paths) {
+        if (!FileUtil::Exists(info.path)) {
+            LOG_INFO(Service_FS, "Patch file {} not found, skipping.", info.path);
+            continue;
+        }
+        
         FileUtil::IOFile patch_file{info.path, "rb"};
         if (!patch_file)
             continue;
@@ -611,12 +638,14 @@ Loader::ResultStatus NCCHContainer::ApplyCodePatch(std::vector<u8>& code) const 
             return Loader::ResultStatus::Error;
 
         LOG_INFO(Service_FS, "File {} patching code.bin", info.path);
-        if (!info.patch_fn(patch, code))
+        if (!info.patch_fn(patch, code)) {
+            LOG_WARNING(Service_FS, "Failed to apply patch from {}", info.path);
             return Loader::ResultStatus::Error;
+        }
 
-        return Loader::ResultStatus::Success;
+        patch_applied = true;
     }
-    return Loader::ResultStatus::ErrorNotUsed;
+    return patch_applied ? Loader::ResultStatus::Success : Loader::ResultStatus::ErrorNotUsed;
 }
 
 Loader::ResultStatus NCCHContainer::LoadOverrideExeFSSection(const char* name,
@@ -638,11 +667,21 @@ Loader::ResultStatus NCCHContainer::LoadOverrideExeFSSection(const char* name,
     const auto mods_path =
         fmt::format("{}mods/{:016X}/", FileUtil::GetUserPath(FileUtil::UserPath::LoadDir),
                     GetModId(ncch_header.program_id));
-    const std::array<std::string, 3> override_paths{{
+    std::vector<std::string> override_paths{{
         mods_path + "exefs/" + override_name,
         mods_path + override_name,
         filepath + ".exefsdir/" + override_name,
     }};
+
+    #ifdef ANDROID
+    const auto mod_dirs = FileUtil::GetModsDirs(ncch_header.program_id);
+    for (const auto& [path, apply] : mod_dirs) {
+        if (apply) {
+            override_paths.push_back(path + "/exefs/" + override_name);
+            override_paths.push_back(path + "/" + override_name);
+        }
+    }
+    #endif
 
     for (const auto& path : override_paths) {
         FileUtil::IOFile section_file(path, "rb");
