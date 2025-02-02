@@ -51,7 +51,7 @@ class GameIconKeyer : Keyer<Game> {
 }
 
 object GameIconUtils {
-    fun loadGameIcon(activity: FragmentActivity, game: Game, imageView: ImageView) {
+    fun loadGameIcon(activity: FragmentActivity, game: Game, imageView: ImageView, isRound: Boolean = true) {
         val imageLoader = ImageLoader.Builder(activity)
             .components {
                 add(GameIconKeyer())
@@ -64,15 +64,25 @@ object GameIconUtils {
             }
             .build()
 
-        val request = ImageRequest.Builder(activity)
-            .data(game)
-            .target(imageView)
-            .error(R.drawable.no_icon)
-            .transformations(
+        val transformations = mutableListOf<Transformation>()
+
+        if (isRound) {
+            transformations.add(
                 RoundedCornersTransformation(
                     activity.resources.getDimensionPixelSize(R.dimen.spacing_med).toFloat()
                 )
             )
+        }
+
+        val request = ImageRequest.Builder(activity)
+            .data(game)
+            .target(imageView)
+            .error(R.drawable.no_icon)
+            .apply {
+                if (transformations.isNotEmpty()) {
+                    transformations(transformations)
+                }
+            }
             .build()
         imageLoader.enqueue(request)
     }
