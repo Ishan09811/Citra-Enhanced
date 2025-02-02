@@ -30,7 +30,6 @@ import io.github.mandarine3ds.mandarine.MandarineApplication
 import io.github.mandarine3ds.mandarine.adapters.GameAboutAdapter
 import io.github.mandarine3ds.mandarine.databinding.FragmentGameAboutBinding
 import io.github.mandarine3ds.mandarine.features.settings.model.Settings
-import io.github.mandarine3ds.mandarine.model.DriverViewModel
 import io.github.mandarine3ds.mandarine.model.GameAbout
 import io.github.mandarine3ds.mandarine.viewmodel.GamesViewModel
 import io.github.mandarine3ds.mandarine.viewmodel.HomeViewModel
@@ -51,7 +50,6 @@ class GameAboutFragment : Fragment() {
 
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val gamesViewModel: GamesViewModel by activityViewModels()
-    private val driverViewModel: DriverViewModel by activityViewModels()
 
     private val args by navArgs<GameAboutFragmentArgs>()
 
