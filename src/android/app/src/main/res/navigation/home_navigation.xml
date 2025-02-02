@@ -103,4 +103,18 @@
         android:name="io.github.mandarine3ds.mandarine.fragments.ManagementFragment"
         android:label="ManagementFragment" />
 
+    <fragment
+        android:id="@+id/gameAboutFragment"
+        android:name="io.github.mandarine3ds.mandarine.fragments.GameAboutFragment"
+        android:label="GameAboutFragment" >
+        <argument
+            android:name="game"
+            app:argType="io.github.mandarine3ds.mandarine.model.Game" />
+        <action
+            android:id="@+id/action_gameAboutFragment_to_addonsFragment"
+            app:destination="@id/cheatsFragment" />
+    </fragment>
+    <action
+        android:id="@+id/action_global_gameAboutFragment"
+        app:destination="@id/gameAboutFragment" />
 </navigation>
