@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -59,6 +60,7 @@ class GameAboutFragment : Fragment() {
         enterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
         returnTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
         reenterTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
@@ -76,11 +78,8 @@ class GameAboutFragment : Fragment() {
         homeViewModel.setStatusBarShadeVisibility(true)
 
         (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.toolbar)
+        (requireActivity() as? AppCompatActivity)?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         (requireActivity() as? AppCompatActivity)?.supportActionBar?.title = args.game.title
-
-        binding.buttonBack.setOnClickListener {
-            view.findNavController().popBackStack()
-        }
 
         val shortcutManager = requireActivity().getSystemService(ShortcutManager::class.java)
         binding.buttonShortcut.isEnabled = shortcutManager.isRequestPinShortcutSupported
@@ -96,6 +95,16 @@ class GameAboutFragment : Fragment() {
 
         reloadList()
         setInsets()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                binding.root.findNavController().popBackStack()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onDestroy() {
