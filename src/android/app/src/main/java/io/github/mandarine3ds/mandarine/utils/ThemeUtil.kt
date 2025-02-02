@@ -80,7 +80,7 @@ object ThemeUtil {
         }
     }
 
-    private fun isNightMode(activity: AppCompatActivity): Boolean {
+    fun isNightMode(activity: AppCompatActivity): Boolean {
         return when (activity.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
             Configuration.UI_MODE_NIGHT_NO -> false
             Configuration.UI_MODE_NIGHT_YES -> true

@@ -3,6 +3,9 @@
 // Refer to the license.txt file included.
 
 #ifdef ANDROID
+#include <vector>
+#include <string>
+#include <utility>
 #include "common/android_storage.h"
 
 namespace AndroidStorage {
@@ -170,6 +173,69 @@ bool RenameFile(const std::string& source, const std::string& filename) {
     jstring j_destination_path = env->NewStringUTF(filename.c_str());
     return env->CallStaticBooleanMethod(native_library, rename_file, j_source_path,
                                         j_destination_path);
+}
+
+std::vector<std::pair<std::string, bool>> GetModsDirs(u64 titleId) {
+    std::vector<std::pair<std::string, bool>> result;
+
+    auto env = GetEnvForThread();
+    if (!env) return result;
+
+    jclass dataProviderClass = env->FindClass("io/github/mandarine3ds/mandarine/NativeLibrary");
+    if (!dataProviderClass || env->ExceptionCheck()) return result;
+
+    jmethodID getDataMethod = env->GetStaticMethodID(dataProviderClass, "getModsDirs", "(J)Ljava/util/List;");
+    if (!getDataMethod || env->ExceptionCheck()) return result;
+
+    jobject listObject = env->CallStaticObjectMethod(dataProviderClass, getDataMethod, static_cast<jlong>(titleId));
+    if (!listObject || env->ExceptionCheck()) return result;
+
+    jclass listClass = env->FindClass("java/util/List");
+    if (!listClass || env->ExceptionCheck()) return result;
+
+    jmethodID listGet = env->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
+    jmethodID listSize = env->GetMethodID(listClass, "size", "()I");
+    if (!listGet || !listSize || env->ExceptionCheck()) return result;
+
+    jint size = env->CallIntMethod(listObject, listSize);
+    if (env->ExceptionCheck()) return result;
+
+    jclass pairClass = env->FindClass("kotlin/Pair");
+    if (!pairClass || env->ExceptionCheck()) return result;
+
+    jfieldID firstField = env->GetFieldID(pairClass, "first", "Ljava/lang/Object;");
+    jfieldID secondField = env->GetFieldID(pairClass, "second", "Ljava/lang/Object;");
+    if (!firstField || !secondField || env->ExceptionCheck()) return result;
+
+    for (int i = 0; i < size; ++i) {
+        jobject pairObject = env->CallObjectMethod(listObject, listGet, i);
+        if (!pairObject || env->ExceptionCheck()) continue;
+
+        jstring first = (jstring)env->GetObjectField(pairObject, firstField);
+        if (!first) {
+            env->DeleteLocalRef(pairObject);
+            continue;
+        }
+
+        jobject second = env->GetObjectField(pairObject, secondField);
+
+        const char* firstStr = env->GetStringUTFChars(first, nullptr);
+        bool secondBool = second ? env->CallBooleanMethod(second, env->GetMethodID(env->FindClass("java/lang/Boolean"), "booleanValue", "()Z")) : false;
+
+        result.emplace_back(std::string(firstStr), secondBool);
+
+        env->ReleaseStringUTFChars(first, firstStr);
+        env->DeleteLocalRef(first);
+        if (second) env->DeleteLocalRef(second);
+        env->DeleteLocalRef(pairObject);
+    }
+
+    env->DeleteLocalRef(listObject);
+    env->DeleteLocalRef(dataProviderClass);
+    env->DeleteLocalRef(listClass);
+    env->DeleteLocalRef(pairClass);
+
+    return result;
 }
 
 #define FR(FunctionName, ReturnValue, JMethodID, Caller, JMethodName, Signature)                   \

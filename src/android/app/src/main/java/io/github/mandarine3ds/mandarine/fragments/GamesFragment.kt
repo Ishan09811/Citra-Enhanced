@@ -65,18 +65,10 @@ class GamesFragment : Fragment() {
 
     private val gamesViewModel: GamesViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
-
-    private val openImageLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        gameAdapter.handleImageResult(uri)
-    }
-
     private val filerGamesCallBack =
         { _: Int, _: Int -> filterAndSearch() }
 
     private lateinit var preferences: SharedPreferences
-
     private lateinit var gameAdapter: GameAdapter
 
     private val documentPicker =
@@ -105,7 +97,6 @@ class GamesFragment : Fragment() {
             }
         }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enterTransition = MaterialFadeThrough()
@@ -124,15 +115,9 @@ class GamesFragment : Fragment() {
     @SuppressLint("UnsafeRepeatOnLifecycleDetector")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         homeViewModel.setStatusBarShadeVisibility(visible = true)
-
         preferences = PreferenceManager.getDefaultSharedPreferences(MandarineApplication.appContext)
-
-        val inflater = LayoutInflater.from(requireContext())
-
         gameAdapter = GameAdapter(
             requireActivity() as AppCompatActivity,
-            inflater,
-            openImageLauncher,
             filerGamesCallBack
         )
 

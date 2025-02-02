@@ -14,12 +14,17 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 #include <vector>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/wrapper.hpp>
 #include "common/common_types.h"
 #ifdef _MSC_VER
+#include "common/string_util.h"
+#endif
+#ifdef ANDROID
+#include "common/android_storage.h"
 #include "common/string_util.h"
 #endif
 
@@ -196,6 +201,12 @@ void SetCurrentRomPath(const std::string& path);
 // directory.
 [[nodiscard]] const std::string& GetDefaultUserPath(UserPath path);
 
+#ifdef ANDROID
+inline std::vector<std::pair<std::string, bool>> GetModsDirs(u64 titleId) {
+    return AndroidStorage::GetModsDirs(titleId);
+}
+#endif
+    
 // Update the Global Path with the new value
 void UpdateUserPath(UserPath path, const std::string& filename);
 

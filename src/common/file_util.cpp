@@ -74,11 +74,6 @@
 
 #endif
 
-#ifdef ANDROID
-#include "common/android_storage.h"
-#include "common/string_util.h"
-#endif
-
 #include <algorithm>
 #include <sys/stat.h>
 
