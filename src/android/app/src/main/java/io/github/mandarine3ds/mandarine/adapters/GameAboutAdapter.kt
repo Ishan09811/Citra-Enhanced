@@ -15,7 +15,7 @@ import io.github.mandarine3ds.mandarine.utils.ViewUtils.setVisible
 import io.github.mandarine3ds.mandarine.utils.collect
 import io.github.mandarine3ds.mandarine.viewholder.AbstractViewHolder
 
-class GamePropertiesAdapter(
+class GameAboutAdapter(
     private val viewLifecycle: LifecycleOwner,
     private var properties: List<GameAbout>
 ) : AbstractListAdapter<GameAbout, AbstractViewHolder<GameAbout>>(properties) {
