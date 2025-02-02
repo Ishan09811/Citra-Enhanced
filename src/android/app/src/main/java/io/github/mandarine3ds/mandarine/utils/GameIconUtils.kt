@@ -64,7 +64,7 @@ object GameIconUtils {
             }
             .build()
 
-        val transformations = mutableListOf<Transformation>()
+        val transformations = mutableListOf<coil.transform.Transformation>()
 
         if (isRound) {
             transformations.add(
