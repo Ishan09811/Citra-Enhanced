@@ -128,7 +128,7 @@ class GameAboutFragment : Fragment() {
         }
         binding.listProperties.apply {
             layoutManager =
-                GridLayoutManager(requireContext(), resources.getInteger(R.integer.grid_columns))
+                GridLayoutManager(requireContext(), resources.getInteger(R.integer.game_grid_columns))
             adapter = GameAboutAdapter(viewLifecycleOwner, properties)
         }
     }
