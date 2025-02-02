@@ -153,10 +153,10 @@ class GameAboutFragment : Fragment() {
                     ViewCompat.LAYOUT_DIRECTION_LTR
                 ) {
                     binding.listAll.updateMargins(right = rightInsets)
-                    binding.iconLayout!!.updateMargins(top = barInsets.top, left = leftInsets)
+                    //binding.iconLayout!!.updateMargins(top = barInsets.top, left = leftInsets)
                 } else {
                     binding.listAll.updateMargins(left = leftInsets)
-                    binding.iconLayout!!.updateMargins(top = barInsets.top, right = rightInsets)
+                    //binding.iconLayout!!.updateMargins(top = barInsets.top, right = rightInsets)
                 }
             }
 
