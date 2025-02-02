@@ -174,11 +174,11 @@ class GameAboutFragment : Fragment() {
                 bottom = barInsets.bottom + fabSpacing
             )
 
-            binding.layoutAll.updatePadding(
+            /*binding.layoutAll.updatePadding(
                 top = barInsets.top,
                 bottom = barInsets.bottom +
                     resources.getDimensionPixelSize(R.dimen.spacing_bottom_list_fab)
-            )
+            )*/
 
             windowInsets
         }
