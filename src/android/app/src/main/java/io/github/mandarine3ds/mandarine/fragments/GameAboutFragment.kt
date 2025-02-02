@@ -74,6 +74,9 @@ class GameAboutFragment : Fragment() {
         homeViewModel.setNavigationVisibility(visible = false, animated = true)
         homeViewModel.setStatusBarShadeVisibility(true)
 
+        requireActivity().setSupportActionBar(binding.toolbar)
+        requireActivity().supportActionBar?.title = args.game.title
+
         binding.buttonBack.setOnClickListener {
             view.findNavController().popBackStack()
         }
@@ -84,9 +87,7 @@ class GameAboutFragment : Fragment() {
             //TODO: create shortcut
         }
 
-        // TODO: GameIconUtils.loadGameIcon(args.game, binding.imageGameScreen)
-        binding.title.text = args.game.title
-        binding.title.marquee()
+        GameIconUtils.loadGameIcon(requireActivity(), args.game, binding.imageGameScreen)
 
         binding.buttonStart.setOnClickListener {
             //TODO: launch game
