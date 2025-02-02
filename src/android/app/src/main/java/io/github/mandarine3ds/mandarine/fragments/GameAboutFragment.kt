@@ -77,7 +77,7 @@ class GameAboutFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         homeViewModel.setNavigationVisibility(visible = false, animated = true)
-        homeViewModel.setStatusBarShadeVisibility(true)
+        homeViewModel.setStatusBarShadeVisibility(false)
 
         (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.toolbar)
         (requireActivity() as? AppCompatActivity)?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -90,14 +90,17 @@ class GameAboutFragment : Fragment() {
             if (collapseThreshold) {
                 binding.toolbar.animate().alpha(1f).setDuration(300).start()
                 (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(true)
+                homeViewModel.setStatusBarShadeVisibility(false)
             } else if (verticalOffset == 0) {
                 binding.toolbar.animate().alpha(0f).setDuration(300).start()
                 (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(false)
+                homeViewModel.setStatusBarShadeVisibility(true)
             } else {
                 if (binding.toolbar.alpha < 1f) {
                     binding.toolbar.animate().alpha(1f).setDuration(300).start()
                 }
-                (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(true) 
+                (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(true)
+                homeViewModel.setStatusBarShadeVisibility(false)
             }
         })
 
