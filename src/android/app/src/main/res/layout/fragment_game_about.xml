@@ -74,7 +74,7 @@
         android:layout_height="wrap_content"
         android:text="@string/play"
         app:icon="@drawable/ic_play"
-        app:layout_anchor="@id/appBarLayout"
-        app:layout_anchorGravity="bottom|end" />
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
