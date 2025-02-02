@@ -64,7 +64,7 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
         val path = uri?.toString()
         if (path != null) {
             imagePath = path
-            refreshDialogIcon()
+            //refreshDialogIcon()
         }
     }
 
