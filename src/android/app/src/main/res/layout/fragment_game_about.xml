@@ -46,8 +46,7 @@
                     app:icon="@drawable/ic_back"
                     app:iconSize="24dp"
                     app:iconTint="?attr/colorOnSurface"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:layout_gravity="end|center_vertical" />
             
                 <Button
                     android:id="@+id/button_shortcut"
@@ -57,8 +56,7 @@
                     app:icon="@drawable/ic_shortcut"
                     app:iconSize="24dp"
                     app:iconTint="?attr/colorOnSurface"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:layout_gravity="end|center_vertical" />
                 
             </com.google.android.material.appbar.MaterialToolbar>
         </com.google.android.material.appbar.CollapsingToolbarLayout>
