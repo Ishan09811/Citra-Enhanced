@@ -32,9 +32,9 @@ import io.github.mandarine3ds.mandarine.databinding.FragmentGameAboutBinding
 import io.github.mandarine3ds.mandarine.features.settings.model.Settings
 import io.github.mandarine3ds.mandarine.model.DriverViewModel
 import io.github.mandarine3ds.mandarine.model.GameAbout
-import io.github.mandarine3ds.mandarine.model.GamesViewModel
-import io.github.mandarine3ds.mandarine.model.HomeViewModel
-import io.github.mandarine3ds.mandarine.SubmenuGameAbout
+import io.github.mandarine3ds.mandarine.viewmodel.GamesViewModel
+import io.github.mandarine3ds.mandarine.viewmodel.HomeViewModel
+import io.github.mandarine3ds.mandarine.model.SubmenuGameAbout
 import io.github.mandarine3ds.mandarine.utils.DirectoryInitialization
 import io.github.mandarine3ds.mandarine.utils.FileUtil
 import io.github.mandarine3ds.mandarine.utils.GameIconUtils
@@ -177,3 +177,4 @@ class GameAboutFragment : Fragment() {
 
             windowInsets
         }
+}
