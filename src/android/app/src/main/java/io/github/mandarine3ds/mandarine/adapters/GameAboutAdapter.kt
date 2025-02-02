@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright 2025 Mandarine Project
 
 package io.github.mandarine3ds.mandarine.adapters
 
@@ -34,6 +35,7 @@ class GameAboutAdapter(
                     )
                 )
             }
+            else -> throw IllegalArgumentException("Unsupported view type: $viewType")
         }
     }
 
@@ -41,7 +43,7 @@ class GameAboutAdapter(
         return PropertyType.Submenu.ordinal 
     }
 
-    inner class SubmenuGameAboutViewHolder(val binding: CardSimpleOutlinedBinding) :
+    inner class SubmenuGameAboutViewHolder(val binding: CardOutlinedBinding) :
         AbstractViewHolder<GameAbout>(binding) {
         override fun bind(model: GameAbout) {
             val submenuInfo = model as SubmenuGameAbout
@@ -63,7 +65,7 @@ class GameAboutAdapter(
             binding.details.marquee()
             if (submenuInfo.details != null) {
                 binding.details.setVisible(true)
-                binding.details.text = submenuProperty.details.invoke()
+                binding.details.text = submenuInfo.details.invoke()
             } else if (submenuInfo.detailsFlow != null) {
                 binding.details.setVisible(true)
                 submenuInfo.detailsFlow.collect(viewLifecycle) { binding.details.text = it }
