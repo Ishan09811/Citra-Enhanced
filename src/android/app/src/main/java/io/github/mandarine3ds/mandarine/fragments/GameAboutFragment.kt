@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -74,8 +75,8 @@ class GameAboutFragment : Fragment() {
         homeViewModel.setNavigationVisibility(visible = false, animated = true)
         homeViewModel.setStatusBarShadeVisibility(true)
 
-        requireActivity().setSupportActionBar(binding.toolbar)
-        requireActivity().supportActionBar?.title = args.game.title
+        (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.toolbar)
+        (requireActivity() as? AppCompatActivity)?.supportActionBar?.title = args.game.title
 
         binding.buttonBack.setOnClickListener {
             view.findNavController().popBackStack()
@@ -100,6 +101,11 @@ class GameAboutFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         gamesViewModel.reloadGames(true)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        (requireActivity() as? AppCompatActivity)?.setSupportActionBar(null)
     }
 
     private fun reloadList() {
