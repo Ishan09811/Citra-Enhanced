@@ -5,6 +5,7 @@ package io.github.mandarine3ds.mandarine.fragments
 
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -122,11 +123,9 @@ class GameAboutFragment : Fragment() {
                         binding.appBarLayout.setBackgroundColor(dominantColor)
                         binding.collapsingToolbarLayout.setContentScrimColor(dominantColor)
 			binding.toolbar.setBackgroundColor(dominantColor)
-            
+			binding.toolbar.setNavigationIconTint(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
+			binding.buttonShortcut.setIconTint(ColorStateList.valueOf(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE))
                         binding.toolbar.setTitleTextColor(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
-                        /*if (isLightColor(dominantColor)) {
-                              binding.toolbar.setNavigationIcon(R.drawable.ic_back_arrow_black)
-                        }*/
                     }
                 }
 	    } catch (e: Exception) {
@@ -201,11 +200,16 @@ class GameAboutFragment : Fragment() {
     }
 
     private fun isLightColor(color: Int): Boolean {
-        val r = Color.red(color)
-        val g = Color.green(color)
-        val b = Color.blue(color)
-        val luminance = 0.299 * r + 0.587 * g + 0.114 * b
-        return luminance > 186 
+        val r = Color.red(color) / 255.0
+        val g = Color.green(color) / 255.0
+        val b = Color.blue(color) / 255.0
+
+        val rLinear = if (r <= 0.03928) r / 12.92 else Math.pow((r + 0.055) / 1.055, 2.4)
+        val gLinear = if (g <= 0.03928) g / 12.92 else Math.pow((g + 0.055) / 1.055, 2.4)
+        val bLinear = if (b <= 0.03928) b / 12.92 else Math.pow((b + 0.055) / 1.055, 2.4)
+
+        val luminance = 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear
+        return luminance > 0.5
     }
 
     override fun onResume() {
