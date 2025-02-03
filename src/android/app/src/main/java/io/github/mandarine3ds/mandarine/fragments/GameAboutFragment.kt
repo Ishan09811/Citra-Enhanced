@@ -121,7 +121,7 @@ class GameAboutFragment : Fragment() {
 
                         binding.appBarLayout.setBackgroundColor(dominantColor)
                         binding.collapsingToolbarLayout.setContentScrimColor(dominantColor)
-			binding.toolbar.setBackground(dominantColor)
+			binding.toolbar.setBackgroundColor(dominantColor)
             
                         binding.toolbar.setTitleTextColor(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
                         /*if (isLightColor(dominantColor)) {
