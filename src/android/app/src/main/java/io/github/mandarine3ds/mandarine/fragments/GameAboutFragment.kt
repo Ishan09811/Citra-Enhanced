@@ -6,6 +6,7 @@ package io.github.mandarine3ds.mandarine.fragments
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.content.res.ColorStateList
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
@@ -33,10 +34,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.transition.MaterialSharedAxis
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.palette.graphics.Palette
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import io.github.mandarine3ds.mandarine.HomeNavigationDirections
 import io.github.mandarine3ds.mandarine.R
 import io.github.mandarine3ds.mandarine.MandarineApplication
@@ -44,6 +43,7 @@ import io.github.mandarine3ds.mandarine.adapters.GameAboutAdapter
 import io.github.mandarine3ds.mandarine.databinding.FragmentGameAboutBinding
 import io.github.mandarine3ds.mandarine.databinding.DialogShortcutBinding
 import io.github.mandarine3ds.mandarine.features.settings.model.Settings
+import io.github.mandarine3ds.mandarine.model.Game
 import io.github.mandarine3ds.mandarine.model.GameAbout
 import io.github.mandarine3ds.mandarine.viewmodel.GamesViewModel
 import io.github.mandarine3ds.mandarine.viewmodel.HomeViewModel
@@ -67,7 +67,7 @@ class GameAboutFragment : Fragment() {
     private var _binding: FragmentGameAboutBinding? = null
     private val binding get() = _binding!!
 
-    private var dialogShortcutBinding: DialogShortcutBinding by lazy { DialogShortcutBinding.inflate(requireActivity().layoutInflater) }
+    private val dialogShortcutBinding: DialogShortcutBinding by lazy { DialogShortcutBinding.inflate(requireActivity().layoutInflater) }
 
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val gamesViewModel: GamesViewModel by activityViewModels()
@@ -269,7 +269,7 @@ class GameAboutFragment : Fragment() {
 
     private fun handleShortcutIconResult(uri: Uri?) {
         if (uri != null || uri != Uri.EMPTY) {
-            val scaledBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeStream(uri.inputStream()), 108, 108, true)
+            val scaledBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeStream(uri!!.inputStream()), 108, 108, true)
             dialogShortcutBinding.shortcutIcon.setImageBitmap(scaledBitmap)
         }
     }
