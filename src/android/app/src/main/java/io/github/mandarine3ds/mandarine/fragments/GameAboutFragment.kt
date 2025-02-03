@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.MenuItem
 import android.widget.Toast
+import android.graphics.Color
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -24,6 +25,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.transition.MaterialSharedAxis
 import com.google.android.material.appbar.AppBarLayout
+import androidx.palette.graphics.Palette
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -104,6 +106,24 @@ class GameAboutFragment : Fragment() {
             }
         })
 
+        val bitmap = GameIconUtils.getGameIcon(args.game)
+		if (bitmap != null) {
+            Palette.from(bitmap).generate { palette ->
+                palette?.let {
+                    val dominantColor = palette.getDominantColor(
+                        MaterialColors.getColor(requireView(), com.google.android.material.R.attr.colorSurface)
+                    )
+                    binding.appBarLayout.setBackgroundColor(dominantColor)
+                    binding.collapsingToolbarLayout.setContentScrimColor(dominantColor)
+                            
+                    binding.toolbar.setTitleTextColor(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
+		            /*if (isLightColor(dominantColor)) {
+		                binding.toolbar.setNavigationIcon(R.drawable.ic_back_arrow_black)
+		            }*/
+                }
+            }
+		}
+
         val shortcutManager = requireActivity().getSystemService(ShortcutManager::class.java)
         binding.buttonShortcut.isEnabled = shortcutManager.isRequestPinShortcutSupported
         binding.buttonShortcut.setOnClickListener {
@@ -168,6 +188,14 @@ class GameAboutFragment : Fragment() {
                 GridLayoutManager(requireContext(), resources.getInteger(R.integer.game_grid_columns))
             adapter = GameAboutAdapter(viewLifecycleOwner, properties)
         }
+    }
+
+    private fun isLightColor(color: Int): Boolean {
+        val r = Color.red(color)
+        val g = Color.green(color)
+        val b = Color.blue(color)
+        val luminance = 0.299 * r + 0.587 * g + 0.114 * b
+        return luminance > 186 
     }
 
     override fun onResume() {
