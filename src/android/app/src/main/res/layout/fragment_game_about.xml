@@ -36,15 +36,17 @@
                 app:layout_collapseMode="pin"
                 android:background="?attr/colorSurface">
             
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_shortcut"
-                    style="?attr/materialIconButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="end|center_vertical"
                     app:icon="@drawable/ic_shortcut"
                     app:iconSize="24dp"
                     app:iconTint="?attr/colorOnSurface"
-                    android:layout_gravity="end|center_vertical" />
+                    app:cornerRadius="8dp"
+                    app:iconGravity="textStart"
+                    style="?attr/materialIconButtonStyle" />
                 
             </com.google.android.material.appbar.MaterialToolbar>
         </com.google.android.material.appbar.CollapsingToolbarLayout>
