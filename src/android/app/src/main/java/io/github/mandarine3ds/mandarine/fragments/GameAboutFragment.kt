@@ -6,6 +6,10 @@ package io.github.mandarine3ds.mandarine.fragments
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +18,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import android.graphics.Color
 import android.util.Log
+import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -37,6 +42,7 @@ import io.github.mandarine3ds.mandarine.R
 import io.github.mandarine3ds.mandarine.MandarineApplication
 import io.github.mandarine3ds.mandarine.adapters.GameAboutAdapter
 import io.github.mandarine3ds.mandarine.databinding.FragmentGameAboutBinding
+import io.github.mandarine3ds.mandarine.databinding.DialogShortcutBinding
 import io.github.mandarine3ds.mandarine.features.settings.model.Settings
 import io.github.mandarine3ds.mandarine.model.GameAbout
 import io.github.mandarine3ds.mandarine.viewmodel.GamesViewModel
@@ -44,6 +50,7 @@ import io.github.mandarine3ds.mandarine.viewmodel.HomeViewModel
 import io.github.mandarine3ds.mandarine.model.SubmenuGameAbout
 import io.github.mandarine3ds.mandarine.utils.DirectoryInitialization
 import io.github.mandarine3ds.mandarine.utils.FileUtil
+import io.github.mandarine3ds.mandarine.utils.FileUtil.inputStream
 import io.github.mandarine3ds.mandarine.utils.GameIconUtils
 import io.github.mandarine3ds.mandarine.utils.GpuDriverHelper
 import io.github.mandarine3ds.mandarine.utils.ViewUtils.marquee
@@ -52,15 +59,27 @@ import io.github.mandarine3ds.mandarine.utils.collect
 import java.io.BufferedOutputStream
 import java.io.File
 import kotlin.math.abs
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 
 class GameAboutFragment : Fragment() {
     private var _binding: FragmentGameAboutBinding? = null
     private val binding get() = _binding!!
 
+    private var dialogShortcutBinding: DialogShortcutBinding by lazy { DialogShortcutBinding.inflate(requireActivity().layoutInflater) }
+
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val gamesViewModel: GamesViewModel by activityViewModels()
 
     private val args by navArgs<GameAboutFragmentArgs>()
+
+    private val shortcutManager by lazy { requireActivity().getSystemService(ShortcutManager::class.java) }
+    private val openShortcutIconLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        handleShortcutIconResult(uri)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -133,10 +152,9 @@ class GameAboutFragment : Fragment() {
 	    }
         }
 
-        val shortcutManager = requireActivity().getSystemService(ShortcutManager::class.java)
         binding.buttonShortcut.isEnabled = shortcutManager.isRequestPinShortcutSupported
         binding.buttonShortcut.setOnClickListener {
-            //TODO: create shortcut
+            showShortcutDialog(args.game)
         }
 
         GameIconUtils.loadGameIcon(requireActivity(), args.game, binding.imageGameScreen)
@@ -200,6 +218,42 @@ class GameAboutFragment : Fragment() {
         }
     }
 
+    private fun showShortcutDialog(game: Game) {
+        dialogShortcutBinding.shortcutNameInput.setText(game.title)
+        GameIconUtils.loadGameIcon(requireActivity(), game, dialogShortcutBinding.shortcutIcon)
+
+        dialogShortcutBinding.shortcutIcon.setOnClickListener {
+           openShortcutIconLauncher?.launch("image/*")
+        }
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.create_shortcut)
+            .setView(dialogShortcutBinding.root)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val shortcutName = dialogShortcutBinding.shortcutNameInput.text.toString()
+                if (shortcutName.isEmpty()) {
+                    Toast.makeText(requireContext(), R.string.shortcut_name_empty, Toast.LENGTH_LONG).show()
+                    return@setPositiveButton
+                }
+                val iconBitmap = (dialogShortcutBinding.shortcutIcon.drawable as BitmapDrawable).bitmap
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    val icon = Icon.createWithBitmap(iconBitmap)
+                    val shortcut = ShortcutInfo.Builder(requireContext(), shortcutName)
+                    .setShortLabel(shortcutName)
+                    .setIcon(icon)
+                    .setIntent(game.launchIntent.apply {
+                        putExtra("launchedFromShortcut", true)
+                    })
+                    .build()
+
+                    shortcutManager?.requestPinShortcut(shortcut, null)
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private fun isLightColor(color: Int): Boolean {
         val r = Color.red(color) / 255.0
         val g = Color.green(color) / 255.0
@@ -211,6 +265,13 @@ class GameAboutFragment : Fragment() {
 
         val luminance = 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear
         return luminance > 0.5
+    }
+
+    private fun handleShortcutIconResult(uri: Uri?) {
+        if (uri != null || uri != Uri.EMPTY) {
+            val scaledBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeStream(uri.inputStream()), 108, 108, true)
+            dialogShortcutBinding.shortcutIcon.setImageBitmap(scaledBitmap)
+        }
     }
 
     override fun onResume() {
