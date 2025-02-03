@@ -142,7 +142,8 @@ class GameAboutFragment : Fragment() {
         GameIconUtils.loadGameIcon(requireActivity(), args.game, binding.imageGameScreen)
 
         binding.buttonStart.setOnClickListener {
-            //TODO: launch game
+            val action = HomeNavigationDirections.actionGlobalEmulationActivity(args.game)
+            view.findNavController().navigate(action)
         }
 
         reloadList()
