@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.view.MenuItem
 import android.widget.Toast
 import android.graphics.Color
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -108,22 +109,29 @@ class GameAboutFragment : Fragment() {
         })
 
         val bitmap = GameIconUtils.getGameIcon(args.game)
-		if (bitmap != null) {
-            Palette.from(bitmap).generate { palette ->
-                palette?.let {
-                    val dominantColor = palette.getDominantColor(
-                        MaterialColors.getColor(requireView(), com.google.android.material.R.attr.colorSurface)
-                    )
-                    binding.appBarLayout.setBackgroundColor(dominantColor)
-                    binding.collapsingToolbarLayout.setContentScrimColor(dominantColor)
-                            
-                    binding.toolbar.setTitleTextColor(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
-		            /*if (isLightColor(dominantColor)) {
-		                binding.toolbar.setNavigationIcon(R.drawable.ic_back_arrow_black)
-		            }*/
+        if (bitmap != null) {
+	    try {
+                Palette.from(bitmap).generate { palette ->
+		    if (palette == null) Log.e("palette generation failed!")
+                    palette?.let {
+                        val defaultColor = MaterialColors.getColor(requireView(), com.google.android.material.R.attr.colorSurface)
+                        val dominantColor = palette.getDominantColor(defaultColor)
+                        .takeIf { it != defaultColor } ?: palette.getVibrantColor(defaultColor)
+                        .takeIf { it != defaultColor } ?: palette.getMutedColor(defaultColor)
+
+                        binding.appBarLayout.setBackgroundColor(dominantColor)
+                        binding.collapsingToolbarLayout.setContentScrimColor(dominantColor)
+            
+                        binding.toolbar.setTitleTextColor(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
+                        /*if (isLightColor(dominantColor)) {
+                              binding.toolbar.setNavigationIcon(R.drawable.ic_back_arrow_black)
+                        }*/
+                    }
                 }
-            }
-		}
+	    } catch (e: Exception) {
+		Log.e("palette generation failed: ${e.message}")
+	    }
+        }
 
         val shortcutManager = requireActivity().getSystemService(ShortcutManager::class.java)
         binding.buttonShortcut.isEnabled = shortcutManager.isRequestPinShortcutSupported
