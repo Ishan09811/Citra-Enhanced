@@ -86,4 +86,13 @@ object GameIconUtils {
             .build()
         imageLoader.enqueue(request)
     }
+
+    fun getGameIcon(game: Game, width: Int = 48, height: Int = 48): Bitmap? {
+        if (pixelData == null || pixelData.size != width * height) {
+            return null
+        }
+        return Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565).apply {
+            copyPixelsFromBuffer(IntBuffer.wrap(game.icon))
+        }
+    }
 }
