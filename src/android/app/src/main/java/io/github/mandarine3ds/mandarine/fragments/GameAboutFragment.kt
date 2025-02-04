@@ -220,6 +220,7 @@ class GameAboutFragment : Fragment() {
     }
 
     private fun showShortcutDialog(game: Game) {
+	(dialogShortcutBinding.root.parent as? ViewGroup)?.removeView(dialogShortcutBinding.root)
         dialogShortcutBinding.shortcutNameInput.setText(game.title)
         GameIconUtils.loadGameIcon(requireActivity(), game, dialogShortcutBinding.shortcutIcon)
 
