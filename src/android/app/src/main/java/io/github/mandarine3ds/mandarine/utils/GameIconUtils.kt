@@ -37,7 +37,19 @@ class GameIconFetcher(
     private fun getGameIcon(vector: IntArray?): Bitmap {
         val bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.RGB_565)
         bitmap.copyPixelsFromBuffer(IntBuffer.wrap(vector))
-        return bitmap
+        return applyNearestFilter(bitmap)
+    }
+
+    private fun applyNearestFilter(bitmap: Bitmap): Bitmap {
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 48, 48, false)
+        val paint = Paint().apply {
+            isFilterBitmap = false
+        }
+
+        val resultBitmap = Bitmap.createBitmap(48, 48, bitmap.config)
+        val canvas = Canvas(resultBitmap)
+        canvas.drawBitmap(scaledBitmap, 0f, 0f, paint)
+        return resultBitmap
     }
 
     class Factory : Fetcher.Factory<Game> {
