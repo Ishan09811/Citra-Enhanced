@@ -39,7 +39,7 @@ import io.github.mandarine3ds.mandarine.utils.FileUtil
 import io.github.mandarine3ds.mandarine.utils.GameIconUtils
 import io.github.mandarine3ds.mandarine.viewmodel.GamesViewModel
 
-class GameAdapter(private val activity: AppCompatActivity, private val inflater: LayoutInflater,  private val openImageLauncher: ActivityResultLauncher<String>?) :
+class GameAdapter() :
     ListAdapter<Game, GameViewHolder>(AsyncDifferConfig.Builder(DiffCallback()).build()),
     View.OnClickListener, View.OnLongClickListener {
     private var lastClickTime = 0L
