@@ -64,7 +64,7 @@ class GamesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         homeViewModel.setNavigationVisibility(visible = true, animated = true)
         homeViewModel.setStatusBarShadeVisibility(visible = true)
-        adapter = GameAdapter()
+        adapter = GameAdapter(requireActivity())
 
         binding.gridGames.apply {
             layoutManager = GridLayoutManager(
