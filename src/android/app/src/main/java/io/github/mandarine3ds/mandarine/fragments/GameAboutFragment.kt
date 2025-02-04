@@ -58,6 +58,7 @@ import io.github.mandarine3ds.mandarine.utils.GpuDriverHelper
 import io.github.mandarine3ds.mandarine.utils.ViewUtils.marquee
 import io.github.mandarine3ds.mandarine.utils.ViewUtils.updateMargins
 import io.github.mandarine3ds.mandarine.utils.collect
+import io.github.mandarine3ds.mandarine.utils.ThemeUtil
 import java.io.BufferedOutputStream
 import java.io.File
 import kotlin.math.abs
