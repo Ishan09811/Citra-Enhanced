@@ -5,6 +5,8 @@
 package io.github.mandarine3ds.mandarine.utils
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.widget.ImageView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.fragment.app.FragmentActivity
