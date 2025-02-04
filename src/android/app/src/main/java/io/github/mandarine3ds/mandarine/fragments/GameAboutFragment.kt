@@ -25,6 +25,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -119,6 +121,7 @@ class GameAboutFragment : Fragment() {
                 binding.toolbar.animate().alpha(0f).setDuration(300).start()
                 (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(false)
                 homeViewModel.setStatusBarShadeVisibility(true)
+		setStatusBarLightTheme(!ThemeUtil.isNightMode(requireActivity()))
             } else {
                 if (binding.toolbar.alpha < 1f) {
                     binding.toolbar.animate().alpha(1f).setDuration(300).start()
@@ -138,7 +141,7 @@ class GameAboutFragment : Fragment() {
                         val dominantColor = palette.getDominantColor(defaultColor)
                         .takeIf { it != defaultColor } ?: palette.getVibrantColor(defaultColor)
                         .takeIf { it != defaultColor } ?: palette.getMutedColor(defaultColor)
-
+ 
                         binding.appBarLayout.setBackgroundColor(dominantColor)
                         binding.collapsingToolbarLayout.setContentScrimColor(dominantColor)
 			binding.collapsingToolbarLayout.setExpandedTitleColor(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
@@ -146,6 +149,7 @@ class GameAboutFragment : Fragment() {
 			binding.toolbar.setBackgroundColor(dominantColor)
 			binding.toolbar.setNavigationIconTint(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
 			binding.buttonShortcut.setIconTint(ColorStateList.valueOf(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE))
+			setStatusBarLightTheme(if (isLightColor(dominantColor)) true else false)
                     }
                 }
 	    } catch (e: Exception) {
@@ -169,6 +173,10 @@ class GameAboutFragment : Fragment() {
         setInsets()
     }
 
+    private fun setStatusBarLightTheme(value: Boolean) {
+	WindowCompat.getInsetsController(requireActivity().window, requireActivity().window.decorView).isAppearanceLightStatusBars = value
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
@@ -185,6 +193,7 @@ class GameAboutFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+	setStatusBarLightTheme(!ThemeUtil.isNightMode(requireActivity()))
         super.onDestroyView()
         (requireActivity() as? AppCompatActivity)?.setSupportActionBar(null)
     }
@@ -270,7 +279,7 @@ class GameAboutFragment : Fragment() {
     }
 
     private fun handleShortcutIconResult(uri: Uri?) {
-        if (uri != null || uri != Uri.EMPTY) {
+        if (uri != null && uri != Uri.EMPTY) {
             val scaledBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeStream(uri!!.inputStream()), 108, 108, true)
             dialogShortcutBinding.shortcutIcon.setImageBitmap(scaledBitmap)
         }
