@@ -122,7 +122,7 @@ class GameAboutFragment : Fragment() {
                 binding.toolbar.animate().alpha(0f).setDuration(300).start()
                 (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(false)
                 homeViewModel.setStatusBarShadeVisibility(true)
-		setStatusBarLightTheme(!ThemeUtil.isNightMode(requireActivity()))
+		setStatusBarLightTheme(!ThemeUtil.isNightMode(requireActivity() as AppCompatActivity))
             } else {
                 if (binding.toolbar.alpha < 1f) {
                     binding.toolbar.animate().alpha(1f).setDuration(300).start()
@@ -194,7 +194,7 @@ class GameAboutFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-	setStatusBarLightTheme(!ThemeUtil.isNightMode(requireActivity()))
+	setStatusBarLightTheme(!ThemeUtil.isNightMode(requireActivity() as AppCompatActivity))
         super.onDestroyView()
         (requireActivity() as? AppCompatActivity)?.setSupportActionBar(null)
     }
