@@ -175,7 +175,7 @@ class GameAboutFragment : Fragment() {
     }
 
     private fun setStatusBarLightTheme(value: Boolean) {
-	WindowCompat.getInsetsController(requireActivity().window, requireActivity().window.decorView).isAppearanceLightStatusBars = value
+	WindowCompat.getInsetsController((requireActivity() as AppCompatActivity).window, (requireActivity() as AppCompatActivity).window.decorView).isAppearanceLightStatusBars = value
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
