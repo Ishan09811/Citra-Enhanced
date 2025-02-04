@@ -141,10 +141,11 @@ class GameAboutFragment : Fragment() {
 
                         binding.appBarLayout.setBackgroundColor(dominantColor)
                         binding.collapsingToolbarLayout.setContentScrimColor(dominantColor)
+			binding.collapsingToolbarLayout.setExpandedTitleColor(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
+                        binding.collapsingToolbarLayout.setCollapsedTitleTextColor(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
 			binding.toolbar.setBackgroundColor(dominantColor)
 			binding.toolbar.setNavigationIconTint(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
 			binding.buttonShortcut.setIconTint(ColorStateList.valueOf(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE))
-                        binding.toolbar.setTitleTextColor(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
                     }
                 }
 	    } catch (e: Exception) {
