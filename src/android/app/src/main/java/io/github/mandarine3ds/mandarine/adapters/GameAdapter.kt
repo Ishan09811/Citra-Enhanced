@@ -5,12 +5,7 @@
 package io.github.mandarine3ds.mandarine.adapters
 
 import android.content.Context
-import android.content.pm.ShortcutInfo
-import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Icon
 import android.content.Intent
 import android.net.Uri
 import android.os.SystemClock
@@ -30,12 +25,6 @@ import androidx.recyclerview.widget.AsyncDifferConfig
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import android.widget.PopupMenu
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.CoroutineScope
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.github.mandarine3ds.mandarine.HomeNavigationDirections
@@ -43,9 +32,6 @@ import io.github.mandarine3ds.mandarine.MandarineApplication
 import io.github.mandarine3ds.mandarine.R
 import io.github.mandarine3ds.mandarine.adapters.GameAdapter.GameViewHolder
 import io.github.mandarine3ds.mandarine.databinding.CardGameBinding
-import io.github.mandarine3ds.mandarine.databinding.DialogAboutGameBinding
-import io.github.mandarine3ds.mandarine.databinding.DialogShortcutBinding
-import io.github.mandarine3ds.mandarine.features.cheats.ui.CheatsFragmentDirections
 import io.github.mandarine3ds.mandarine.fragments.IndeterminateProgressDialogFragment
 import io.github.mandarine3ds.mandarine.fragments.GameAboutFragment
 import io.github.mandarine3ds.mandarine.model.Game
@@ -57,16 +43,6 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
     ListAdapter<Game, GameViewHolder>(AsyncDifferConfig.Builder(DiffCallback()).build()),
     View.OnClickListener, View.OnLongClickListener {
     private var lastClickTime = 0L
-    private var imagePath: String? = null
-    private var dialogShortcutBinding: DialogShortcutBinding? = null
-
-    fun handleImageResult(uri: Uri?) {
-        val path = uri?.toString()
-        if (path != null) {
-            imagePath = path
-            //refreshDialogIcon()
-        }
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GameViewHolder {
         // Create a new view.
