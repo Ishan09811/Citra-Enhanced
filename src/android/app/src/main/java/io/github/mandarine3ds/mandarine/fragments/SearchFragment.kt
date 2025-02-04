@@ -80,8 +80,7 @@ class SearchFragment : Fragment() {
             )
             adapter = GameAdapter(
                 requireActivity() as AppCompatActivity,
-                inflater,
-                null
+                inflater
             )}
 
         binding.chipGroup.setOnCheckedStateChangeListener { _, _ -> filterAndSearch() }
