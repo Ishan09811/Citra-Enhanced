@@ -48,7 +48,7 @@ class GameIconFetcher(
             isFilterBitmap = false
         }
 
-        val resultBitmap = Bitmap.createBitmap(48, 48, bitmap.config)
+        val resultBitmap = Bitmap.createBitmap(48, 48, bitmap.config!!)
         val canvas = Canvas(resultBitmap)
         canvas.drawBitmap(scaledBitmap, 0f, 0f, paint)
         return resultBitmap
