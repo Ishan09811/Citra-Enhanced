@@ -71,17 +71,13 @@ class SearchFragment : Fragment() {
             binding.searchText.setText(savedInstanceState.getString(SEARCH_TEXT))
         }
 
-        val inflater = LayoutInflater.from(requireContext())
-
         binding.gridGamesSearch.apply {
             layoutManager = GridLayoutManager(
                 requireContext(),
                 resources.getInteger(R.integer.game_grid_columns)
             )
-            adapter = GameAdapter(
-                requireActivity() as AppCompatActivity,
-                inflater
-            )}
+            adapter = GameAdapter()
+        }
 
         binding.chipGroup.setOnCheckedStateChangeListener { _, _ -> filterAndSearch() }
 
