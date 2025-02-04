@@ -43,12 +43,6 @@ class GamesFragment : Fragment() {
     private val gamesViewModel: GamesViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
 
-    private val openImageLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        adapter.handleImageResult(uri)
-    }
-
     private lateinit var adapter: GameAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,8 +68,7 @@ class GamesFragment : Fragment() {
 
         adapter = GameAdapter(
             requireActivity() as AppCompatActivity,
-            inflater,
-            openImageLauncher
+            inflater
         )
 
         binding.gridGames.apply {
