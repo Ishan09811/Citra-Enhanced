@@ -77,6 +77,8 @@ class GameAboutFragment : Fragment() {
 
     private val args by navArgs<GameAboutFragmentArgs>()
 
+    private var shouldLightStatusBar: Boolean = false
+
     private val shortcutManager by lazy { requireActivity().getSystemService(ShortcutManager::class.java) }
     private val openShortcutIconLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -110,6 +112,8 @@ class GameAboutFragment : Fragment() {
         (requireActivity() as? AppCompatActivity)?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         (requireActivity() as? AppCompatActivity)?.supportActionBar?.title = args.game.title
 
+	shouldLightStatusBar = !ThemeUtil.isNightMode(requireActivity() as AppCompatActivity)
+
         binding.appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
             val totalScrollRange = appBarLayout.totalScrollRange
             val collapseThreshold = Math.abs(verticalOffset) == totalScrollRange
@@ -118,6 +122,7 @@ class GameAboutFragment : Fragment() {
                 binding.toolbar.animate().alpha(1f).setDuration(300).start()
                 (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(true)
                 homeViewModel.setStatusBarShadeVisibility(false)
+		setStatusBarLightTheme(shouldLightStatusBar)
             } else if (verticalOffset == 0) {
                 binding.toolbar.animate().alpha(0f).setDuration(300).start()
                 (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(false)
@@ -129,6 +134,7 @@ class GameAboutFragment : Fragment() {
                 }
                 (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(true)
                 homeViewModel.setStatusBarShadeVisibility(false)
+		setStatusBarLightTheme(shouldLightStatusBar)
             }
         })
 
@@ -150,7 +156,7 @@ class GameAboutFragment : Fragment() {
 			binding.toolbar.setBackgroundColor(dominantColor)
 			binding.toolbar.setNavigationIconTint(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
 			binding.buttonShortcut.setIconTint(ColorStateList.valueOf(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE))
-			setStatusBarLightTheme(if (isLightColor(dominantColor)) true else false)
+			shouldLightStatusBar = if (isLightColor(dominantColor)) true else false
                     }
                 }
 	    } catch (e: Exception) {
