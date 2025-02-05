@@ -29,8 +29,10 @@ class GameIconFetcher(
     private val options: Options
 ) : Fetcher {
     override suspend fun fetch(): FetchResult {
+        val bitmapDrawable = getGameIcon(game.icon).toDrawable(options.context.resources)
+        bitmapDrawable.setFilterBitmap(false)
         return DrawableResult(
-            drawable = getGameIcon(game.icon).toDrawable(options.context.resources),
+            drawable = bitmapDrawable,
             isSampled = false,
             dataSource = DataSource.DISK
         )
@@ -39,19 +41,7 @@ class GameIconFetcher(
     private fun getGameIcon(vector: IntArray?): Bitmap {
         val bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.RGB_565)
         bitmap.copyPixelsFromBuffer(IntBuffer.wrap(vector))
-        return applyNearestFilter(bitmap)
-    }
-
-    private fun applyNearestFilter(bitmap: Bitmap): Bitmap {
-        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 48, 48, false)
-        val paint = Paint().apply {
-            isFilterBitmap = false
-        }
-
-        val resultBitmap = Bitmap.createBitmap(48, 48, bitmap.config!!)
-        val canvas = Canvas(resultBitmap)
-        canvas.drawBitmap(scaledBitmap, 0f, 0f, paint)
-        return resultBitmap
+        return bitmap
     }
 
     class Factory : Fetcher.Factory<Game> {
