@@ -215,7 +215,9 @@ class GameAboutFragment : Fragment() {
                     R.string.info_description,
                     R.drawable.ic_info_outline
                 ) {
-                    //TODO
+                    val action = GameAboutFragmentDirections
+                        .actionGameAboutFragmentToGameInfoFragment(args.game)
+                    binding.root.findNavController().navigate(action)
                 }
             )
             add(
