@@ -19,6 +19,7 @@
             android:layout_height="wrap_content"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:contentScrim="?attr/colorSurface"
+            app:expandedTitleTextAppearance="@style/ExpandedToolbarTitleText"
             app:toolbarId="@id/toolbar">
 
             <ImageView
