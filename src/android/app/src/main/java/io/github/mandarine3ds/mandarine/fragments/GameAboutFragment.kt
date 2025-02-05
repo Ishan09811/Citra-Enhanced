@@ -169,7 +169,7 @@ class GameAboutFragment : Fragment() {
             showShortcutDialog(args.game)
         }
 
-        GameIconUtils.loadGameIcon(requireActivity(), args.game, binding.imageGameScreen)
+        GameIconUtils.loadGameIcon(requireActivity(), args.game, binding.imageGameScreen, false)
 
         binding.buttonStart.setOnClickListener {
             val action = HomeNavigationDirections.actionGlobalEmulationActivity(args.game)
