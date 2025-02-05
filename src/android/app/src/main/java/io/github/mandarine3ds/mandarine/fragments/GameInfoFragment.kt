@@ -25,6 +25,7 @@ import com.google.android.material.transition.MaterialSharedAxis
 import io.github.mandarine3ds.mandarine.R
 import io.github.mandarine3ds.mandarine.databinding.FragmentGameInfoBinding
 import io.github.mandarine3ds.mandarine.viewmodel.HomeViewModel
+import io.github.mandarine3ds.mandarine.model.Game
 import io.github.mandarine3ds.mandarine.utils.ViewUtils.setVisible
 import io.github.mandarine3ds.mandarine.utils.ViewUtils.updateMargins
 
