@@ -502,9 +502,13 @@
     <string name="game_context_uninstall_dlc">Uninstall DLC</string>
     <string name="game_context_uninstall_updates">Uninstall Updates</string>
     <string name="add_ons">Add-ons</string>
-    <string name="add_ons_description">Toggle mods, updates and DLC</string>
+    <string name="add_ons_description">mods, updates, cheats, custom texture</string>
     <string name="info">Info</string>
     <string name="info_description">Title ID, company, version</string>
+    <string name="name">Name</string>
+    <string name="title_id">Title ID</string>
+    <string name="author">Author</string>
+    <string name="version">Version</string>
 
     <!-- Cheats -->
     <string name="cheats">Cheats</string>
