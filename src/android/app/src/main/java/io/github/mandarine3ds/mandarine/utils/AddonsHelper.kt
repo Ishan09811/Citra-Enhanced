@@ -23,7 +23,7 @@ object AddonsHelper {
         val context = MandarineApplication.appContext
         preferences = PreferenceManager.getDefaultSharedPreferences(context)
         val serializedMods = preferences.getStringSet(KEY_MODS, emptySet()) ?: emptySet()
-        mods = serializedMods.map { Json.decodeFromString<Mods>(it) }.toMutableList()
+        mods = serializedMods.map { Json.decodeFromString<Mod>(it) }.toMutableList()
         mods.forEach { mod ->
           if (!FileUtil.exists(mod.installedPath)) mods.remove(mod)
         }
