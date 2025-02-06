@@ -16,7 +16,8 @@ import kotlinx.serialization.Serializable
 class Mod(
     val title: String = "",
     val path: String = "",
-    val filename: String
+    val filename: String,
+    val installedPath: String
 ) : Parcelable
 
 @Parcelize
@@ -24,5 +25,6 @@ class Mod(
 class CustomTexture(
     val title: String = "",
     val path: String = "",
-    val filename: String
+    val filename: String,
+    val installedPath: String
 ) : Parcelable
