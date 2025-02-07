@@ -4,35 +4,52 @@
 
 package io.github.mandarine3ds.mandarine.model
 
+import android.os.Parcel
 import android.os.Parcelable
-import android.content.Intent
-import android.net.Uri
-import java.util.HashSet
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
-@Parcelize
 @Serializable
-class Addon(
+open class Addon(
     val title: String = ""
-) : Parcelable
+) : Parcelable {
+    constructor(parcel: Parcel) : this(parcel.readString() ?: "")
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(title)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<Addon> {
+        override fun createFromParcel(parcel: Parcel): Addon {
+            return Addon(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Addon?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
 
 @Parcelize
 @Serializable
 class Mod(
     val path: String = "",
-    val filename: String,
-    val installedPath: String
-    val titleId: Int
+    val filename: String = "",
+    val installedPath: String = "",
+    val titleId: Int = 0,
     val enabled: Boolean = true
-) : Addon
+) : Addon()
 
 @Parcelize
 @Serializable
 class CustomTexture(
     val path: String = "",
-    val filename: String,
-    val installedPath: String
-    val titleId: Int
+    val filename: String = "",
+    val installedPath: String = "",
+    val titleId: Int = 0,
     val enabled: Boolean = true
-) : Addon
+) : Addon()
