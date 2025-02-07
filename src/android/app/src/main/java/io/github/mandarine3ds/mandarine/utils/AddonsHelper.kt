@@ -18,7 +18,7 @@ object AddonsHelper {
 
     private lateinit var preferences: SharedPreferences
 
-    fun getMods(): List<Mod> {
+    private fun getMods(): List<Mod> {
         var mods = mutableListOf<Mod>()
         val context = MandarineApplication.appContext
         preferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -30,7 +30,7 @@ object AddonsHelper {
         return mods.toList()
     } 
 
-    fun getMod(uri: Uri, installedPath: Uri, title: String? = null): Mod {
+    fun getMod(uri: Uri, installedPath: Uri, game: Game, title: String? = null): Mod {
         val filePath = uri.toString()
 
         val newMod = Mod(
@@ -41,17 +41,18 @@ object AddonsHelper {
             } else {
                 FileUtil.getFilename(Uri.parse(filePath))
             },
-            installedPath.toString()
+            installedPath.toString(),
+            game.titleId.toInt()
         )
 
         return newMod
     }
 
-    fun addMod(uri: Uri, installedPath: Uri, title: String? = null) {
+    fun addMod(uri: Uri, installedPath: Uri, game: Game, title: String? = null) {
         preferences = PreferenceManager.getDefaultSharedPreferences(MandarineApplication.appContext)
         val serializedMods = preferences.getStringSet(KEY_MODS, emptySet()) ?: emptySet()
         val mods = serializedMods.map { Json.decodeFromString<Mod>(it) }.toMutableList()
-        mods.add(getMod(uri, installedPath, title))
+        mods.add(getMod(uri, installedPath, game, title))
         val newSerializedMods = mutableSetOf<String>()
         mods.forEach { newSerializedMods.add(Json.encodeToString(it)) }
 
@@ -59,5 +60,12 @@ object AddonsHelper {
             .remove(KEY_MODS)
             .putStringSet(KEY_MODS, newSerializedMods)
             .apply()
+    }
+
+    fun getAddons(game: Game): List<Addon> {
+        val mods = getMods()
+        return mods.filter { mod ->  
+            mod.titleId == game.titleId.toInt()
+        }
     }
 }
