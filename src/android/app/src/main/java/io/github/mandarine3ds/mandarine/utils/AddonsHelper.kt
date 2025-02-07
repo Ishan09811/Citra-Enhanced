@@ -20,6 +20,19 @@ object AddonsHelper {
 
     private lateinit var preferences: SharedPreferences
 
+    private val tempDriverZipFile: DocumentFile
+        get() {
+            val root = DocumentFile.fromTreeUri(
+                MandarineApplication.appContext,
+                Uri.parse(DirectoryInitialization.userPath)
+            )!!
+            var driverDirectory = root.findFile("cache")
+            if (driverDirectory == null) {
+                driverDirectory = FileUtil.createDir(root.uri.toString(), "cache")
+            }
+            return driverDirectory!!
+        }
+
     private fun getMods(): List<Mod> {
         var mods = mutableListOf<Mod>()
         val context = MandarineApplication.appContext
@@ -62,6 +75,18 @@ object AddonsHelper {
             .remove(KEY_MODS)
             .putStringSet(KEY_MODS, newSerializedMods)
             .apply()
+    }
+
+    fun installMod(uri: Uri, game: Game) {
+        if (FileUtil.getExtension(uri) != "zip") return
+        val destDirUri = FileUtil.getModsDir().uri!!
+        val extractedUri = FileUtil.extractZip(uri, destDirUri) ?: return
+        val extractedFolderName = FileUtil.getFilename(extractedUri) ?: return
+        return if (extractedFolderName == game.titleId.toString() && isDirectory(extractedUri.toString())) {
+            addMod(uri, extractedUri, game)
+        } else {
+            FileUtil.deleteDocument(extractedUri.toString())
+        }
     }
 
     fun getAddons(game: Game): List<Addon> {
