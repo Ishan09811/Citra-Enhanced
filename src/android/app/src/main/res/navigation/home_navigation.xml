@@ -112,7 +112,7 @@
             app:argType="io.github.mandarine3ds.mandarine.model.Game" />
         <action
             android:id="@+id/action_gameAboutFragment_to_addonsFragment"
-            app:destination="@id/cheatsFragment" />
+            app:destination="@id/addonsFragment" />
         <action
             android:id="@+id/action_gameAboutFragment_to_gameInfoFragment"
             app:destination="@id/gameInfoFragment" />
@@ -122,6 +122,15 @@
         android:id="@+id/gameInfoFragment"
         android:name="io.github.mandarine3ds.mandarine.fragments.GameInfoFragment"
         android:label="GameInfoFragment">
+        <argument
+            android:name="game"
+            app:argType="io.github.mandarine3ds.mandarine.model.Game" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addonsFragment"
+        android:name="io.github.mandarine3ds.mandarine.fragments.AddonsFragment"
+        android:label="AddonsFragment" >
         <argument
             android:name="game"
             app:argType="io.github.mandarine3ds.mandarine.model.Game" />
