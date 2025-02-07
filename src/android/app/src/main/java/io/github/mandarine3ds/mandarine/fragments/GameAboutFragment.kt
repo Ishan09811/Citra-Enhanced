@@ -226,7 +226,9 @@ class GameAboutFragment : Fragment() {
                     R.string.add_ons_description,
                     R.drawable.ic_edit
                 ) {
-                    //TODO: launch cheats activity
+                    val action = GameAboutFragmentDirections
+                        .actionGameAboutFragmentToAddonsFragment(args.game)
+                    binding.root.findNavController().navigate(action)
                 }
             )
         }
