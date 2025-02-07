@@ -44,7 +44,7 @@ object AddonsHelper {
                 FileUtil.getFilename(Uri.parse(filePath))
             },
             installedPath = installedPath.toString(),
-            titleId = game.titleId.toInt()
+            titleId = game.titleId
         )
 
         return newMod
@@ -69,7 +69,7 @@ object AddonsHelper {
         val destDirUri = FileUtil.getModsDir().uri!!
         val extractedUri = FileUtil.extractZip(uri, destDirUri) ?: return
         val extractedFolderName = FileUtil.getFilename(extractedUri) ?: return
-        if (extractedFolderName == game.titleId.toString() && FileUtil.isDirectory(extractedUri.toString())) {
+        if (extractedFolderName == String.format("%016X", game.titleId) && FileUtil.isDirectory(extractedUri.toString())) {
             addMod(uri, extractedUri, game)
         } else {
             FileUtil.deleteDocument(extractedUri.toString())
@@ -79,7 +79,7 @@ object AddonsHelper {
     fun getAddons(game: Game): List<Addon> {
         val mods = getMods()
         return mods.filter { mod ->  
-            mod.titleId == game.titleId.toInt()
+            mod.titleId.toInt() == game.titleId.toInt()
         }
     }
 }
