@@ -514,6 +514,40 @@ object FileUtil {
         }
     }
 
+    fun extractZip(zipUri: Uri, destinationUri: Uri): Uri? {
+        val buffer = ByteArray(1024)
+        val contentResolver = context.contentResolver
+        var destinationDirUri: Uri? = null
+
+        try {
+            contentResolver.openInputStream(zipUri)?.use { inputStream ->
+                val zipInputStream = ZipInputStream(BufferedInputStream(inputStream))
+                var entry: ZipEntry?
+
+                while (zipInputStream.nextEntry.also { entry = it } != null) {
+                    val entryName = entry!!.name
+                    val entryUri = createFile(destinationUri, entryName)
+
+                    if (entry!!.isDirectory) {
+                        createDir(destinationUri, entryName)
+                    } else {
+                        contentResolver.openOutputStream(entryUri)?.use { output ->
+                            var length: Int
+                            while (zipInputStream.read(buffer).also { length = it } > 0) {
+                                output.write(buffer, 0, length)
+                            }
+                        }
+                    }
+                }
+                destinationDirUri = destinationUri
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return destinationDirUri
+    }
+
     fun copyToExternalStorage(
         sourceFile: Uri,
         destinationDir: DocumentFile
