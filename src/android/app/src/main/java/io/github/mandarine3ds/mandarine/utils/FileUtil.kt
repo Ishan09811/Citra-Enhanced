@@ -517,7 +517,8 @@ object FileUtil {
     fun extractZip(zipUri: Uri, destinationUri: Uri): Uri? {
         val buffer = ByteArray(1024)
         val contentResolver = context.contentResolver
-        var destinationDirUri: Uri? = null
+
+        val destinationDir = DocumentFile.fromTreeUri(context, destinationUri) ?: return null
 
         try {
             contentResolver.openInputStream(zipUri)?.use { inputStream ->
@@ -526,26 +527,43 @@ object FileUtil {
 
                 while (zipInputStream.nextEntry.also { entry = it } != null) {
                     val entryName = entry!!.name
-                    val entryUri = createFile(destinationUri.toString(), entryName)
 
-                    if (entry!!.isDirectory) {
-                        createDir(destinationUri.toString(), entryName)
+                    if (entry.isDirectory) {
+                        createDirs(destinationDir, entryName)
                     } else {
-                        contentResolver.openOutputStream(entryUri!!.uri!!)?.use { output ->
-                            var length: Int
-                            while (zipInputStream.read(buffer).also { length = it } > 0) {
-                                output.write(buffer, 0, length)
+                        val parentDirName = entryName.substringBeforeLast("/", "")
+                        val parentDir = if (parentDirName.isNotEmpty()) {
+                            createDirs(destinationDir, parentDirName)
+                        } else {
+                            destinationDir
+                        }
+
+                        val file = parentDir?.createFile("application/octet-stream", entryName.substringAfterLast("/"))
+                        file?.uri?.let { fileUri ->
+                            contentResolver.openOutputStream(fileUri)?.use { output ->
+                                var length: Int
+                                while (zipInputStream.read(buffer).also { length = it } > 0) {
+                                    output.write(buffer, 0, length)
+                                }
                             }
                         }
                     }
                 }
-                destinationDirUri = destinationUri
             }
         } catch (e: IOException) {
             e.printStackTrace()
+            return null
         }
 
-        return destinationDirUri
+        return destinationDir.uri
+    }
+
+    private fun createDirs(parent: DocumentFile, dirName: String): DocumentFile? {
+        var currentDir = parent
+        dirName.split("/").forEach { part ->
+            currentDir = currentDir.findFile(part) ?: currentDir.createDirectory(part) ?: return null
+        }
+        return currentDir
     }
 
     fun copyToExternalStorage(
