@@ -23,6 +23,8 @@ class Mod(
     val path: String = "",
     val filename: String,
     val installedPath: String
+    val titleId: Int
+    val enabled: Boolean = true
 ) : Addon
 
 @Parcelize
@@ -31,4 +33,6 @@ class CustomTexture(
     val path: String = "",
     val filename: String,
     val installedPath: String
+    val titleId: Int
+    val enabled: Boolean = true
 ) : Addon
