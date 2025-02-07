@@ -10,9 +10,7 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable
-open class Addon(
-    val title: String = ""
-) : Parcelable {
+open class Addon() : Parcelable {
     constructor(parcel: Parcel) : this(parcel.readString() ?: "")
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -30,6 +28,7 @@ open class Addon(
 @Parcelize
 @Serializable
 class Mod(
+    val title: String = ""
     val path: String = "",
     val filename: String = "",
     val installedPath: String = "",
@@ -40,6 +39,7 @@ class Mod(
 @Parcelize
 @Serializable
 class CustomTexture(
+    val title: String = ""
     val path: String = "",
     val filename: String = "",
     val installedPath: String = "",
