@@ -3,6 +3,7 @@
 
 package io.github.mandarine3ds.mandarine.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
