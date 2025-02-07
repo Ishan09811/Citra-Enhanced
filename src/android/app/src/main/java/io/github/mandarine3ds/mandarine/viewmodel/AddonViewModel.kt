@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import io.github.mandarine3ds.mandarine.utils.AddonHelper
+import io.github.mandarine3ds.mandarine.utils.AddonsHelper
 import java.util.concurrent.atomic.AtomicBoolean
 
 class AddonViewModel : ViewModel() {
