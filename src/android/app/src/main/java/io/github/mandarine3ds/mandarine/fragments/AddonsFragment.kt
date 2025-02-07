@@ -65,15 +65,15 @@ class AddonsFragment : Fragment() {
             binding.root.findNavController().popBackStack()
         }
 
-        binding.toolbarAddons.title = getString("Addons: " + args.game.title)
+        binding.toolbarAddons.title = "Addons: " + args.game.title
 
         binding.listAddons.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = AddonsAdapter(addonViewModel.addonList)
+            adapter = AddonsAdapter()
         }
 
         addonViewModel.addonList.collect(viewLifecycleOwner) {
-            (binding.listAddons.adapter as AddonsAdapter).submitList(it)
+            (binding.listAddons.adapter as AddonsAdapter).updateList(it)
         }
         
         binding.buttonInstall.setOnClickListener {
