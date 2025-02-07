@@ -8,7 +8,7 @@ import io.github.mandarine3ds.mandarine.model.Mod
 import io.github.mandarine3ds.mandarine.model.Addon
 
 class AddonsAdapter(
-    private val addonList: List<Addon>
+    private val addonList: List<Addon> = listOf()
 ) : RecyclerView.Adapter<AddonsAdapter.AddonViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AddonViewHolder {
@@ -24,6 +24,11 @@ class AddonsAdapter(
     }
 
     override fun getItemCount() = addonList.size
+
+    fun updateList(newList: List<Addon>) {
+        addonList = newList
+        notifyDataSetChanged()
+    }
 
     class AddonViewHolder(private val binding: ListItemAddonsBinding) :
         RecyclerView.ViewHolder(binding.root) {
