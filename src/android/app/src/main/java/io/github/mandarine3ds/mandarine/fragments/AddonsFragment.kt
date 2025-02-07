@@ -25,7 +25,7 @@ import io.github.mandarine3ds.mandarine.adapters.AddonsAdapter
 import io.github.mandarine3ds.mandarine.databinding.FragmentAddonsBinding
 import io.github.mandarine3ds.mandarine.viewmodel.AddonViewModel
 import io.github.mandarine3ds.mandarine.viewmodel.HomeViewModel
-import io.github.mandarine3ds.mandarine.utils.AddonHelper
+import io.github.mandarine3ds.mandarine.utils.AddonsHelper
 import io.github.mandarine3ds.mandarine.utils.ViewUtils.updateMargins
 import io.github.mandarine3ds.mandarine.utils.collect
 import java.io.File
