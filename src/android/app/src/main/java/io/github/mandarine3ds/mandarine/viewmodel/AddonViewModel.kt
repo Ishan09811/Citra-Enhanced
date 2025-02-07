@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Mandarine Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-package io.github.mandarine3ds.mandarine.model
+package io.github.mandarine3ds.mandarine.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,9 +33,9 @@ class AddonViewModel : ViewModel() {
         isRefreshing.set(true)
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                /*TODO: val addonList = (AddonHelper.getMods()).toMutableList()
-                patchList.sortBy { it.name }
-                _patchList.value = patchList*/
+                val addons = (AddonsHelper.getAddons(game)).toMutableList()
+                addons.sortBy { it.title }
+                _addonList.value = addons
                 isRefreshing.set(false)
             }
         }
