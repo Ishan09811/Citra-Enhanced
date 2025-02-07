@@ -16,7 +16,7 @@ data class Mod(
     val path: String = "",
     val filename: String = "",
     val installedPath: String = "",
-    val titleId: Int = 0,
+    val titleId: Long,
     val enabled: Boolean = true
 ) : Addon
 
@@ -26,6 +26,6 @@ data class CustomTexture(
     val path: String = "",
     val filename: String = "",
     val installedPath: String = "",
-    val titleId: Int = 0,
+    val titleId: Long,
     val enabled: Boolean = true
 ) : Addon
