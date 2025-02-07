@@ -526,12 +526,12 @@ object FileUtil {
 
                 while (zipInputStream.nextEntry.also { entry = it } != null) {
                     val entryName = entry!!.name
-                    val entryUri = createFile(destinationUri, entryName)
+                    val entryUri = createFile(destinationUri.toString(), entryName)
 
                     if (entry!!.isDirectory) {
-                        createDir(destinationUri, entryName)
+                        createDir(destinationUri.toString(), entryName)
                     } else {
-                        contentResolver.openOutputStream(entryUri)?.use { output ->
+                        contentResolver.openOutputStream(entryUri.uri!!)?.use { output ->
                             var length: Int
                             while (zipInputStream.read(buffer).also { length = it } > 0) {
                                 output.write(buffer, 0, length)
