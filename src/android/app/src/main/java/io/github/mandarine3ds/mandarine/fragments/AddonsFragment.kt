@@ -77,7 +77,7 @@ class AddonsFragment : Fragment() {
         }
         
         binding.buttonInstall.setOnClickListener {
-            installAddon.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
+            installAddon.launch(arrayOf("application/zip"))
         }
 
         setInsets()
@@ -94,7 +94,7 @@ class AddonsFragment : Fragment() {
     }
 
     val installAddon =
-        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
             if (result == null) {
                 return@registerForActivityResult
             }
