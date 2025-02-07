@@ -531,7 +531,7 @@ object FileUtil {
                     val entryName = entry!!.name
 
                     if (entry.isDirectory) {
-                        createDirs(destinationDir, entryName)
+                        val dir = createDirs(destinationDir, entryName)
                         if (topLevelFolder == null) {
                             topLevelFolder = dir
                         }
