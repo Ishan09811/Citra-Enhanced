@@ -77,7 +77,7 @@ class AddonsFragment : Fragment() {
         }
         
         binding.buttonInstall.setOnClickListener {
-            // TODO: implement logic
+            installAddon.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
         }
 
         setInsets()
@@ -98,8 +98,7 @@ class AddonsFragment : Fragment() {
             if (result == null) {
                 return@registerForActivityResult
             }
-
-            //TODO: implement logic
+            AddonsHelper.installMod(result, args.game)
         }
 
     private fun setInsets() =
