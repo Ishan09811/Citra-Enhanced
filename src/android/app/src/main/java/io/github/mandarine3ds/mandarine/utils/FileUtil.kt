@@ -531,7 +531,7 @@ object FileUtil {
                     if (entry!!.isDirectory) {
                         createDir(destinationUri.toString(), entryName)
                     } else {
-                        contentResolver.openOutputStream(entryUri.uri!!)?.use { output ->
+                        contentResolver.openOutputStream(entryUri!!.uri!!)?.use { output ->
                             var length: Int
                             while (zipInputStream.read(buffer).also { length = it } > 0) {
                                 output.write(buffer, 0, length)
