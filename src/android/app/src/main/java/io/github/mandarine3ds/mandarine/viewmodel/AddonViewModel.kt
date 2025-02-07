@@ -35,7 +35,7 @@ class AddonViewModel : ViewModel() {
         isRefreshing.set(true)
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val addons = (AddonsHelper.getAddons(game)).toMutableList()
+                val addons = AddonsHelper.getAddons(game).toMutableList()
                 addons.sortBy { it.title }
                 _addonList.value = addons
                 isRefreshing.set(false)
