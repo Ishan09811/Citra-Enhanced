@@ -19,18 +19,11 @@ open class Addon(
         parcel.writeString(title)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     companion object CREATOR : Parcelable.Creator<Addon> {
-        override fun createFromParcel(parcel: Parcel): Addon {
-            return Addon(parcel)
-        }
-
-        override fun newArray(size: Int): Array<Addon?> {
-            return arrayOfNulls(size)
-        }
+        override fun createFromParcel(parcel: Parcel): Addon = Addon(parcel)
+        override fun newArray(size: Int): Array<Addon?> = arrayOfNulls(size)
     }
 }
 
