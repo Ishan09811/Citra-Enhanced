@@ -98,7 +98,7 @@ class AddonsFragment : Fragment() {
             if (result == null) {
                 return@registerForActivityResult
             }
-            AddonsHelper.installMod(result, args.game)
+            addonViewModel.installMod(result)
         }
 
     private fun setInsets() =
