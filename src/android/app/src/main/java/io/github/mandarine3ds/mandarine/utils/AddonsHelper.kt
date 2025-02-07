@@ -36,15 +36,15 @@ object AddonsHelper {
         val filePath = uri.toString()
 
         val newMod = Mod(
-            (title ?: FileUtil.getFilename(uri)).replace("[\\t\\n\\r]+".toRegex(), " "),
-            filePath,
-            if (FileUtil.isNativePath(filePath)) {
+            title = (title ?: FileUtil.getFilename(uri)).replace("[\\t\\n\\r]+".toRegex(), " "),
+            path = filePath,
+            fileName = if (FileUtil.isNativePath(filePath)) {
                 MandarineApplication.documentsTree.getFilename(filePath)
             } else {
                 FileUtil.getFilename(Uri.parse(filePath))
             },
-            installedPath.toString(),
-            game.titleId.toInt()
+            installedPath = installedPath.toString(),
+            titleId = game.titleId.toInt()
         )
 
         return newMod
