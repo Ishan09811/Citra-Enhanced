@@ -11,6 +11,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import io.github.mandarine3ds.mandarine.MandarineApplication
 import io.github.mandarine3ds.mandarine.model.Mod
+import io.github.mandarine3ds.mandarine.model.Addon
+import io.github.mandarine3ds.mandarine.model.Game
 import java.io.IOException
 
 object AddonsHelper {
