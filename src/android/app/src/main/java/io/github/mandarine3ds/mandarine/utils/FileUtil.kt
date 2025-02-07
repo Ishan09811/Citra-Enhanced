@@ -519,17 +519,22 @@ object FileUtil {
         val contentResolver = context.contentResolver
 
         val destinationDir = DocumentFile.fromTreeUri(context, destinationUri) ?: return null
+        var extractedFolderUri: Uri? = null
 
         try {
             contentResolver.openInputStream(zipUri)?.use { inputStream ->
                 val zipInputStream = ZipInputStream(BufferedInputStream(inputStream))
                 var entry: ZipEntry?
+                var topLevelFolder: DocumentFile? = null
 
                 while (zipInputStream.nextEntry.also { entry = it } != null) {
                     val entryName = entry!!.name
 
                     if (entry.isDirectory) {
                         createDirs(destinationDir, entryName)
+                        if (topLevelFolder == null) {
+                            topLevelFolder = dir
+                        }
                     } else {
                         val parentDirName = entryName.substringBeforeLast("/", "")
                         val parentDir = if (parentDirName.isNotEmpty()) {
@@ -549,13 +554,14 @@ object FileUtil {
                         }
                     }
                 }
+                extractedFolderUri = topLevelFolder?.uri
             }
         } catch (e: IOException) {
             e.printStackTrace()
             return null
         }
 
-        return destinationDir.uri
+        return extractedFolderUri
     }
 
     private fun createDirs(parent: DocumentFile, dirName: String): DocumentFile? {
