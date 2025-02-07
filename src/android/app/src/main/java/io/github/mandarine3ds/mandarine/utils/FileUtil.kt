@@ -580,7 +580,7 @@ object FileUtil {
         )
         val loadDir = root!!.findFile("load") ?: root!!.createDirectory("load")
         val modsDir = loadDir!!.findFile("mods") ?: loadDir!!.createDirectory("mods")
-        return modsDir
+        return modsDir!!
     }
 
     @Throws(IOException::class)
