@@ -10,7 +10,9 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable
-open class Addon() : Parcelable {
+open class Addon(
+    val title: String = ""
+) : Parcelable {
     constructor(parcel: Parcel) : this(parcel.readString() ?: "")
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
