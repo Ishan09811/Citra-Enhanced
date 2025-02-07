@@ -46,6 +46,15 @@ class AddonViewModel : ViewModel() {
         }
     }
 
+    fun installMod(uri: Uri) { 
+        val currentGame = game ?: return
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                AddonsHelper.installMod(uri, currentGame)
+            }
+        }
+    }
+        
     fun onCloseAddons() {
         if (_addonList.value.isEmpty()) {
             return
