@@ -29,13 +29,16 @@ class AddonViewModel : ViewModel() {
     }
 
     fun refreshAddons() {
-        if (isRefreshing.get() || game == null) {
+        if (isRefreshing.get()) {
             return
         }
+        
+        val currentGame = game ?: return
+        
         isRefreshing.set(true)
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val addons = AddonsHelper.getAddons(game).toMutableList()
+                val addons = AddonsHelper.getAddons(currentGame).toMutableList()
                 addons.sortBy { it.title }
                 _addonList.value = addons
                 isRefreshing.set(false)
