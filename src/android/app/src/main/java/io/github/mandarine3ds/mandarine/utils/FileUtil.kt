@@ -573,6 +573,16 @@ object FileUtil {
             .lowercase()
     }
 
+    fun getModsDir() : DocumentFile {
+        val root = DocumentFile.fromTreeUri(
+            context,
+            Uri.parse(DirectoryInitialization.userPath)
+        )
+        val loadDir = root.findFile("load") ?: root.createDirectory("load")
+        val modsDir = loadDir.findFile("mods") ?: loadDir.createDirectory("mods")
+        return modsDir
+    }
+
     @Throws(IOException::class)
     fun getStringFromFile(file: File): String =
         String(file.readBytes(), StandardCharsets.UTF_8)
