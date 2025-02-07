@@ -19,7 +19,7 @@ object AddonsHelper {
     private lateinit var preferences: SharedPreferences
 
     fun getMods(): List<Mod> {
-        val mods = mutableListOf<Mod>()
+        var mods = mutableListOf<Mod>()
         val context = MandarineApplication.appContext
         preferences = PreferenceManager.getDefaultSharedPreferences(context)
         val serializedMods = preferences.getStringSet(KEY_MODS, emptySet()) ?: emptySet()
@@ -34,7 +34,7 @@ object AddonsHelper {
         val filePath = uri.toString()
 
         val newMod = Mod(
-            title ?: FileUtil.getFilename(uri)).replace("[\\t\\n\\r]+".toRegex(), " "),
+            (title ?: FileUtil.getFilename(uri)).replace("[\\t\\n\\r]+".toRegex(), " "),
             filePath,
             if (FileUtil.isNativePath(filePath)) {
                 MandarineApplication.documentsTree.getFilename(filePath)
