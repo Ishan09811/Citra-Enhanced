@@ -578,8 +578,8 @@ object FileUtil {
             context,
             Uri.parse(DirectoryInitialization.userPath)
         )
-        val loadDir = root.findFile("load") ?: root.createDirectory("load")
-        val modsDir = loadDir.findFile("mods") ?: loadDir.createDirectory("mods")
+        val loadDir = root!!.findFile("load") ?: root!!.createDirectory("load")
+        val modsDir = loadDir!!.findFile("mods") ?: loadDir!!.createDirectory("mods")
         return modsDir
     }
 
