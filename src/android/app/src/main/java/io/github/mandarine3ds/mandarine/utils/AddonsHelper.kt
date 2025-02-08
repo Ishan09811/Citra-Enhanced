@@ -6,6 +6,7 @@ package io.github.mandarine3ds.mandarine.utils
 
 import android.content.SharedPreferences
 import android.net.Uri
+import android.util.Log
 import androidx.preference.PreferenceManager
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -69,12 +70,18 @@ object AddonsHelper {
         val destDirUri = FileUtil.getModsDir().uri!!
         val extractedUri = FileUtil.extractZip(uri, destDirUri) ?: return
         val extractedFolderName = FileUtil.getFilename(extractedUri)
+        Log.w("AddonsHelper", "A new mod extracted id: ${extractedFolderName.toString()}")
         if (extractedFolderName != null && FileUtil.isDirectory(extractedUri.toString())) {
-            if (extractedFolderName == String.format("%016X", game.titleId)) 
+            if (extractedFolderName == String.format("%016X", game.titleId)) {
                 addMod(uri, extractedUri, game)
-            else FileUtil.deleteDir(extractedUri.toString())
+                Log.i("AddonsHelper", "A new mod added successfully")
+            } else {
+                FileUtil.deleteDir(extractedUri.toString())
+                Log.w("AddonsHelper", "A new mod failed check: ${extractedUri.toString()}")
+            }
         } else {
             FileUtil.deleteDir(extractedUri.toString())
+            Log.w("AddonsHelper", "A new mod failed check: ${extractedUri.toString()}")
         }
     }
 
