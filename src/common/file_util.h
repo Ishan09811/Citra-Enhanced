@@ -197,9 +197,11 @@ void SetCurrentRomPath(const std::string& path);
 // directory.
 [[nodiscard]] const std::string& GetDefaultUserPath(UserPath path);
 
+#ifdef ANDROID
 std::vector<std::pair<std::string, bool>> GetModsDirs() {
     return AndroidStorage::GetModsDirs();
 }
+#endif
     
 // Update the Global Path with the new value
 void UpdateUserPath(UserPath path, const std::string& filename);
