@@ -175,7 +175,7 @@ bool RenameFile(const std::string& source, const std::string& filename) {
                                         j_destination_path);
 }
 
-std::vector<std::pair<std::string, bool>> GetModsDirs() {
+std::vector<std::pair<std::string, bool>> GetModsDirs(u64 titleId) {
     std::vector<std::pair<std::string, bool>> result;
 
     auto env = GetEnvForThread();
