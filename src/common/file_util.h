@@ -202,7 +202,7 @@ void SetCurrentRomPath(const std::string& path);
 [[nodiscard]] const std::string& GetDefaultUserPath(UserPath path);
 
 #ifdef ANDROID
-std::vector<std::pair<std::string, bool>> GetModsDirs(u64 titleId) {
+inline std::vector<std::pair<std::string, bool>> GetModsDirs(u64 titleId) {
     return AndroidStorage::GetModsDirs(titleId);
 }
 #endif
