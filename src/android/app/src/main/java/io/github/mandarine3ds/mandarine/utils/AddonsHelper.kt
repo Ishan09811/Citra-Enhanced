@@ -67,7 +67,7 @@ object AddonsHelper {
 
     fun installMod(uri: Uri, game: Game) {
         if (FileUtil.getExtension(uri) != "zip") return
-        val destDirUri = FileUtil.getModsDir().uri!!
+        val destDirUri = FileUtil.getModsDir(String.format("%016X", game.titleId)).uri!!
         val extractedUri = FileUtil.extractMod(uri, destDirUri, String.format("%016X", game.titleId)) ?: return
         addMod(uri, extractedUri, game)         
     }
