@@ -173,6 +173,7 @@ object FileUtil {
      * @param path Native content uri path
      * @return bool
      */
+    @JvmStatic
     fun exists(path: String): Boolean {
         var cursor: Cursor? = null
         try {
