@@ -25,6 +25,8 @@ import io.github.mandarine3ds.mandarine.utils.EmulationMenuSettings
 import io.github.mandarine3ds.mandarine.utils.FileUtil
 import io.github.mandarine3ds.mandarine.utils.Log
 import io.github.mandarine3ds.mandarine.utils.NetPlayManager
+import io.github.mandarine3ds.mandarine.utils.AddonsHelper
+import io.github.mandarine3ds.mandarine.model.Mod
 import java.lang.ref.WeakReference
 import java.util.Date
 
@@ -673,6 +675,20 @@ object NativeLibrary {
         } else {
             FileUtil.deleteDocument(path)
         }
+
+    @Keep
+    @JvmStatic
+    fun getModsDirs(value: Long): List<Pair<String, Boolean>> {
+        val modList = mutableListOf<Pair<String, Boolean>>()
+        val addons = AddonsHelper.getAddons(value)
+
+        addons.forEach { addon ->
+            if (addon is Mod) {
+                modList.add(Pair(addon.installedPath, addon.enabled))
+            }
+        }
+        return modList.toList()
+    }
 
     enum class CoreError {
         ErrorSystemFiles,
