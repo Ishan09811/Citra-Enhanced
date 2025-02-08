@@ -187,7 +187,7 @@ std::vector<std::pair<std::string, bool>> GetModsDirs(u64 titleId) {
     jmethodID getDataMethod = env->GetStaticMethodID(dataProviderClass, "getModsDirs", "()Ljava/util/List;");
     if (!getDataMethod) return result;
 
-    jobject listObject = env->CallStaticObjectMethod(dataProviderClass, getDataMethod, titleId);
+    jobject listObject = env->CallStaticObjectMethod(dataProviderClass, getDataMethod, static_cast<jlong>(titleId));
     if (!listObject) return result;
 
     jclass listClass = env->FindClass("java/util/List");
