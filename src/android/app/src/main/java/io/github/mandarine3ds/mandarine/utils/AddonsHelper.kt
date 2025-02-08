@@ -68,9 +68,11 @@ object AddonsHelper {
         if (FileUtil.getExtension(uri) != "zip") return
         val destDirUri = FileUtil.getModsDir().uri!!
         val extractedUri = FileUtil.extractZip(uri, destDirUri) ?: return
-        val extractedFolderName = FileUtil.getFilename(extractedUri) ?: return
-        if (extractedFolderName == String.format("%016X", game.titleId) && FileUtil.isDirectory(extractedUri.toString())) {
-            addMod(uri, extractedUri, game)
+        val extractedFolderName = FileUtil.getFilename(extractedUri)
+        if (extractedFolderName != null && FileUtil.isDirectory(extractedUri.toString())) {
+            if (extractedFolderName == String.format("%016X", game.titleId)) 
+                addMod(uri, extractedUri, game)
+            else FileUtil.deleteDocument(extractedUri.toString())
         } else {
             FileUtil.deleteDocument(extractedUri.toString())
         }
