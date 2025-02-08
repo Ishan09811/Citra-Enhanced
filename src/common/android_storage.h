@@ -9,6 +9,7 @@
 #include <vector>
 #include <fcntl.h>
 #include <jni.h>
+#include "common/common_types.h"
 
 #define ANDROID_STORAGE_FUNCTIONS(V)                                                               \
     V(CreateFile, bool, (const std::string& directory, const std::string& filename), create_file,  \
