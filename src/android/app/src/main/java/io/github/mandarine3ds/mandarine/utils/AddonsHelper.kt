@@ -72,9 +72,9 @@ object AddonsHelper {
         if (extractedFolderName != null && FileUtil.isDirectory(extractedUri.toString())) {
             if (extractedFolderName == String.format("%016X", game.titleId)) 
                 addMod(uri, extractedUri, game)
-            else FileUtil.deleteDocument(extractedUri.toString())
+            else FileUtil.deleteDir(extractedUri.toString())
         } else {
-            FileUtil.deleteDocument(extractedUri.toString())
+            FileUtil.deleteDir(extractedUri.toString())
         }
     }
 
