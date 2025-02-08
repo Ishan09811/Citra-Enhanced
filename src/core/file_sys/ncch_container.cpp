@@ -600,7 +600,7 @@ Loader::ResultStatus NCCHContainer::ApplyCodePatch(std::vector<u8>& code) const 
         std::vector<u8> patch(patch_file.GetSize());
         if (patch_file.ReadBytes(patch.data(), patch.size()) == patch.size()) {
             LOG_INFO(Service_FS, "File {} patching code.bin", info.path);
-            info.patch_fn(patch, code)
+            info.patch_fn(patch, code);
         }
     }
 
