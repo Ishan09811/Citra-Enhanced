@@ -14,6 +14,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 #include <vector>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/string.hpp>
@@ -196,6 +197,10 @@ void SetCurrentRomPath(const std::string& path);
 // directory.
 [[nodiscard]] const std::string& GetDefaultUserPath(UserPath path);
 
+std::vector<std::pair<std::string, bool>> GetModsDirs() {
+    return AndroidStorage::GetModsDirs();
+}
+    
 // Update the Global Path with the new value
 void UpdateUserPath(UserPath path, const std::string& filename);
 
