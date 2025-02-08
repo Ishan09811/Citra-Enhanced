@@ -29,6 +29,7 @@ import io.github.mandarine3ds.mandarine.utils.AddonsHelper
 import io.github.mandarine3ds.mandarine.model.Mod
 import java.lang.ref.WeakReference
 import java.util.Date
+import java.io.File
 
 /**
  * Class which contains methods that interact
@@ -684,7 +685,7 @@ object NativeLibrary {
 
         addons.forEach { addon ->
             if (addon is Mod) {
-                modList.add(Pair(addon.installedPath, addon.enabled))
+                modList.add(Pair(File(Uri.parse(addon.installedPath).path!!).absolutePath!!, addon.enabled))
             }
         }
         return modList.toList()
