@@ -228,7 +228,10 @@ object FileUtil {
      */
     @JvmStatic
     fun getFilename(uri: Uri): String {
-        val columns = arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+        val columns = arrayOf(
+            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+            DocumentsContract.Document.COLUMN_MIME_TYPE
+        )
         var filename = ""
         var c: Cursor? = null
         try {
@@ -239,8 +242,15 @@ object FileUtil {
                 null,
                 null
             )
-            c!!.moveToNext()
-            filename = c.getString(0)
+            if (c != null && c.moveToFirst()) {
+                filename = c.getString(0)
+                val mimeType = c.getString(1)
+                if (DocumentsContract.Document.MIME_TYPE_DIR == mimeType) {
+                    Log.info("[FileUtil]: Uri points to a folder.")
+                } else {
+                    Log.info("[FileUtil]: Uri points to a file.")
+                }
+            }
         } catch (e: Exception) {
             Log.error("[FileUtil]: Cannot get file name, error: " + e.message)
         } finally {
