@@ -23,6 +23,10 @@
 #ifdef _MSC_VER
 #include "common/string_util.h"
 #endif
+#ifdef ANDROID
+#include "common/android_storage.h"
+#include "common/string_util.h"
+#endif
 
 namespace FileUtil {
 
