@@ -483,7 +483,7 @@ object FileUtil {
             DocumentsContract.deleteDocument(context.contentResolver, uri)
             return true
         } catch (e: Exception) {
-            Log.e("[FileUtil]", "Cannot delete folder, error: ${e.message}")
+            Log.error("[FileUtil]: Cannot delete folder, error: ${e.message}")
         }
         return false
     }
