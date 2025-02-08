@@ -68,21 +68,8 @@ object AddonsHelper {
     fun installMod(uri: Uri, game: Game) {
         if (FileUtil.getExtension(uri) != "zip") return
         val destDirUri = FileUtil.getModsDir().uri!!
-        val extractedUri = FileUtil.extractZip(uri, destDirUri) ?: return
-        val extractedFolderName = FileUtil.getFilename(extractedUri)
-        Log.w("AddonsHelper", "A new mod extracted id: ${extractedFolderName.toString()}")
-        if (extractedFolderName != null && FileUtil.isDirectory(extractedUri.toString())) {
-            if (extractedFolderName == String.format("%016X", game.titleId)) {
-                addMod(uri, extractedUri, game)
-                Log.i("AddonsHelper", "A new mod added successfully")
-            } else {
-                FileUtil.deleteDir(extractedUri.toString())
-                Log.w("AddonsHelper", "A new mod failed check: ${extractedUri.toString()}")
-            }
-        } else {
-            FileUtil.deleteDir(extractedUri.toString())
-            Log.w("AddonsHelper", "A new mod failed check: ${extractedUri.toString()}")
-        }
+        val extractedUri = FileUtil.extractMod(uri, destDirUri, String.format("%016X", game.titleId)) ?: return
+        addMod(uri, extractedUri, game)         
     }
 
     fun getAddons(game: Game): List<Addon> {
