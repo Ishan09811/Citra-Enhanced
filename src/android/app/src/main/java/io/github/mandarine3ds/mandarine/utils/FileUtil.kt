@@ -466,6 +466,28 @@ object FileUtil {
         return false
     }
 
+    @JvmStatic
+    fun deleteDir(path: String): Boolean {
+        try {
+            val uri = Uri.parse(path)
+            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(uri))
+            val cursor = context.contentResolver.query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID), null, null, null)
+
+            cursor?.use {
+                while (it.moveToNext()) {
+                    val documentId = it.getString(0)
+                    val fileUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
+                    DocumentsContract.deleteDocument(context.contentResolver, fileUri)
+                }
+            }
+            DocumentsContract.deleteDocument(context.contentResolver, uri)
+            return true
+        } catch (e: Exception) {
+            Log.e("[FileUtil]", "Cannot delete folder, error: ${e.message}")
+        }
+        return false
+    }
+
     @Throws(IOException::class)
     fun getBytesFromFile(file: DocumentFile): ByteArray {
         val uri = file.uri
