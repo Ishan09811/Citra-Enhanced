@@ -550,39 +550,33 @@ object FileUtil {
         }
     }
 
-    fun extractZip(zipUri: Uri, destinationUri: Uri): Uri? {
+    
+    fun extractMod(zipUri: Uri, destinationUri: Uri, gameTitleId: String): Uri? {
         val buffer = ByteArray(1024)
         val contentResolver = context.contentResolver
 
         val destinationDir = DocumentFile.fromTreeUri(context, destinationUri) ?: return null
         var extractedFolderUri: Uri? = null
 
+        val zipFileName = DocumentFile.fromSingleUri(context, zipUri)?.name?.removeSuffix(".zip") ?: "ExtractedFolder"
+        val subFolder = destinationDir.createDirectory(zipFileName) ?: return null
+
         try {
             contentResolver.openInputStream(zipUri)?.use { inputStream ->
                 val zipInputStream = ZipInputStream(BufferedInputStream(inputStream))
                 var entry: ZipEntry?
-                var topLevelFolder: DocumentFile? = null
 
                 while (zipInputStream.nextEntry.also { entry = it } != null) {
                     val entryName = entry!!.name ?: continue
                     val sanitizedEntryName = entryName.replace("..", "").trim()
 
-                    if (entry!!.isDirectory) {
-                        val dir = createDirs(destinationDir, sanitizedEntryName)
-                        if (topLevelFolder == null) {
-                            topLevelFolder = dir
-                        }
-                    } else {
-                        val parentDirName = sanitizedEntryName.substringBeforeLast("/", "")
-                        val parentDir = if (parentDirName.isNotEmpty()) {
-                            createDirs(destinationDir, parentDirName)
-                        } else {
-                            destinationDir
-                        }
+                    if (entry!!.isDirectory) continue
 
+                    val parentDirName = sanitizedEntryName.substringBeforeLast("/", "")
+                    if (parentDirName == gameTitleId) {
                         val fileName = sanitizedEntryName.substringAfterLast("/")
-                        if (fileName.isNotBlank()) {
-                            val file = parentDir?.createFile("application/octet-stream", fileName)
+                        if (fileName == "code.ips" || fileName == "code.bps") {
+                            val file = subFolder.createFile("application/octet-stream", fileName)
                             file?.uri?.let { fileUri ->
                                 contentResolver.openOutputStream(fileUri)?.use { output ->
                                     var length: Int
@@ -594,26 +588,14 @@ object FileUtil {
                         }
                     }
                 }
-                extractedFolderUri = topLevelFolder?.uri
+                extractedFolderUri = subFolder.uri
             }
         } catch (e: IOException) {
             e.printStackTrace()
             return null
         }
-
         return extractedFolderUri
     }
-
-    private fun createDirs(parent: DocumentFile, dirName: String): DocumentFile? {
-        var currentDir = parent
-        dirName.split("/").forEach { part ->
-            if (part.isNotBlank()) {
-                currentDir = currentDir.findFile(part) ?: currentDir.createDirectory(part) ?: return null
-            }
-        }
-        return currentDir
-    }
-
 
     fun copyToExternalStorage(
         sourceFile: Uri,
