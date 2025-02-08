@@ -656,13 +656,14 @@ object FileUtil {
             .lowercase()
     }
 
-    fun getModsDir() : DocumentFile {
+    fun getModsDir(titleId: String) : DocumentFile {
         val root = DocumentFile.fromTreeUri(
             context,
             Uri.parse(DirectoryInitialization.userPath)
         )
         val loadDir = root!!.findFile("load") ?: root!!.createDirectory("load")
-        val modsDir = loadDir!!.findFile("mods") ?: loadDir!!.createDirectory("mods")
+        val modsParentDir = loadDir!!.findFile("mods") ?: loadDir!!.createDirectory("mods")
+        val modsDir = modsParentDir!!.findFile(titleId) ?: modsParentDir!!.createDirectory(titleId)
         return modsDir!!
     }
 
