@@ -67,6 +67,8 @@ void InitJNI(JNIEnv* env, jclass clazz);
 
 void CleanupJNI();
 
+std::vector<std::pair<std::string, bool>> GetModsDirs(u64 titleId);
+
 #define FS(FunctionName, ReturnValue, Parameters, JMethodID, JMethodName, Signature)               \
     F(FunctionName, Parameters, ReturnValue)
 #define F(FunctionName, Parameters, ReturnValue) ReturnValue FunctionName Parameters;
