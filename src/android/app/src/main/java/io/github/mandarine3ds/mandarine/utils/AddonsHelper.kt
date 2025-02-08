@@ -72,10 +72,11 @@ object AddonsHelper {
         addMod(uri, extractedUri, game)         
     }
 
-    fun getAddons(game: Game): List<Addon> {
+    fun getAddons(game: Game = Game(filename = ""), titleId: Long = 0L): List<Addon> {
         val mods = getMods()
+        val titleID = if (game.titleId != 0L) game.titleId else titleId
         return mods.filter { mod ->  
-            mod.titleId.toInt() == game.titleId.toInt()
+            mod.titleId.toInt() == titleID.toInt()
         }
     }
 }
