@@ -173,27 +173,30 @@ object FileUtil {
      * @param path Native content uri path
      * @return bool
      */
-    @JvmStatic
     fun exists(path: String): Boolean {
-        var c: Cursor? = null
+        var cursor: Cursor? = null
         try {
             val uri = Uri.parse(path)
-            val columns = arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
-            c = context.contentResolver.query(
+            val columns = arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE)
+            cursor = context.contentResolver.query(
                 uri,
                 columns,
                 null,
                 null,
                 null
             )
-            return c!!.count > 0
+            if (cursor != null && cursor.moveToFirst()) {
+                val mimeType = cursor.getString(0)
+                return mimeType == DocumentsContract.Document.MIME_TYPE_DIR || cursor.count > 0
+            }
         } catch (e: Exception) {
-            Log.info("[FileUtil] Cannot find file from given path, error: " + e.message)
+            Log.warning("[FileUtil]: Cannot find folder/file from given path, error: ${e.message}")
         } finally {
-            closeQuietly(c)
+            closeQuietly(cursor)
         }
         return false
     }
+
 
     /**
      * Check whether given path is a directory
