@@ -574,7 +574,7 @@ Loader::ResultStatus NCCHContainer::ApplyCodePatch(std::vector<u8>& code) const 
         bool (*patch_fn)(const std::vector<u8>& patch, std::vector<u8>& code);
     };
     
-    const auto mod_data = FileUtil::GetModsDirs();
+    const auto mod_data = FileUtil::GetModsDirs(ncch_header.program_id);
 
     if (mod_data.empty()) {
         LOG_WARNING(Service_FS, "No mod folders found.");
