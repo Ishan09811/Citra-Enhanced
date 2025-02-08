@@ -3,6 +3,9 @@
 // Refer to the license.txt file included.
 
 #ifdef ANDROID
+#include <vector>
+#include <string>
+#include <utility>
 #include "common/android_storage.h"
 
 namespace AndroidStorage {
@@ -170,6 +173,50 @@ bool RenameFile(const std::string& source, const std::string& filename) {
     jstring j_destination_path = env->NewStringUTF(filename.c_str());
     return env->CallStaticBooleanMethod(native_library, rename_file, j_source_path,
                                         j_destination_path);
+}
+
+std::vector<std::pair<std::string, bool>> GetModsDirs() {
+    std::vector<std::pair<std::string, bool>> result;
+
+    auto env = GetEnvForThread();
+    if (!env) return result;
+    
+    jclass dataProviderClass = env->FindClass("io/github/mandarine3ds/mandarine/NativeLibrary");
+    if (!dataProviderClass) return result;
+
+    jmethodID getDataMethod = env->GetStaticMethodID(dataProviderClass, "getModsDirs", "()Ljava/util/List;");
+    if (!getDataMethod) return result;
+
+    jobject listObject = env->CallStaticObjectMethod(dataProviderClass, getDataMethod);
+    if (!listObject) return result;
+
+    jclass listClass = env->FindClass("java/util/List");
+    jmethodID listGet = env->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
+    jmethodID listSize = env->GetMethodID(listClass, "size", "()I");
+
+    jint size = env->CallIntMethod(listObject, listSize);
+
+    jclass pairClass = env->FindClass("kotlin/Pair");
+    jfieldID firstField = env->GetFieldID(pairClass, "first", "Ljava/lang/Object;");
+    jfieldID secondField = env->GetFieldID(pairClass, "second", "Ljava/lang/Object;");
+
+    for (int i = 0; i < size; ++i) {
+        jobject pairObject = env->CallObjectMethod(listObject, listGet, i);
+        if (!pairObject) continue;
+
+        jstring first = (jstring)env->GetObjectField(pairObject, firstField);
+        jobject second = env->GetObjectField(pairObject, secondField);
+
+        const char* firstStr = env->GetStringUTFChars(first, nullptr);
+        bool secondBool = env->CallBooleanMethod(second, env->GetMethodID(env->FindClass("java/lang/Boolean"), "booleanValue", "()Z"));
+
+        result.emplace_back(std::string(firstStr), secondBool);
+
+        env->ReleaseStringUTFChars(first, firstStr);
+        env->DeleteLocalRef(pairObject);
+    }
+
+    return result;
 }
 
 #define FR(FunctionName, ReturnValue, JMethodID, Caller, JMethodName, Signature)                   \
