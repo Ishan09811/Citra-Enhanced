@@ -564,27 +564,31 @@ object FileUtil {
                 var topLevelFolder: DocumentFile? = null
 
                 while (zipInputStream.nextEntry.also { entry = it } != null) {
-                    val entryName = entry!!.name
+                    val entryName = entry!!.name ?: continue
+                    val sanitizedEntryName = entryName.replace("..", "").trim()
 
-                    if (entry.isDirectory) {
-                        val dir = createDirs(destinationDir, entryName)
+                    if (entry!!.isDirectory) {
+                        val dir = createDirs(destinationDir, sanitizedEntryName)
                         if (topLevelFolder == null) {
                             topLevelFolder = dir
                         }
                     } else {
-                        val parentDirName = entryName.substringBeforeLast("/", "")
+                        val parentDirName = sanitizedEntryName.substringBeforeLast("/", "")
                         val parentDir = if (parentDirName.isNotEmpty()) {
                             createDirs(destinationDir, parentDirName)
                         } else {
                             destinationDir
                         }
 
-                        val file = parentDir?.createFile("application/octet-stream", entryName.substringAfterLast("/"))
-                        file?.uri?.let { fileUri ->
-                            contentResolver.openOutputStream(fileUri)?.use { output ->
-                                var length: Int
-                                while (zipInputStream.read(buffer).also { length = it } > 0) {
-                                    output.write(buffer, 0, length)
+                        val fileName = sanitizedEntryName.substringAfterLast("/")
+                        if (fileName.isNotBlank()) {
+                            val file = parentDir?.createFile("application/octet-stream", fileName)
+                            file?.uri?.let { fileUri ->
+                                contentResolver.openOutputStream(fileUri)?.use { output ->
+                                    var length: Int
+                                    while (zipInputStream.read(buffer).also { length = it } > 0) {
+                                        output.write(buffer, 0, length)
+                                    }
                                 }
                             }
                         }
@@ -603,10 +607,13 @@ object FileUtil {
     private fun createDirs(parent: DocumentFile, dirName: String): DocumentFile? {
         var currentDir = parent
         dirName.split("/").forEach { part ->
-            currentDir = currentDir.findFile(part) ?: currentDir.createDirectory(part) ?: return null
+            if (part.isNotBlank()) {
+                currentDir = currentDir.findFile(part) ?: currentDir.createDirectory(part) ?: return null
+            }
         }
         return currentDir
     }
+
 
     fun copyToExternalStorage(
         sourceFile: Uri,
