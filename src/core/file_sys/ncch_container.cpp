@@ -575,6 +575,34 @@ Loader::ResultStatus NCCHContainer::ApplyCodePatch(std::vector<u8>& code) const 
     };
     
     const auto mod_data = FileUtil::GetModsDirs(ncch_header.program_id);
+    
+    constexpr u32 system_module_tid_high = 0x00040130;
+    std::string luma_ips_location;
+    if ((static_cast<u32>(ncch_header.program_id >> 32) & system_module_tid_high) ==
+        system_module_tid_high) {
+        luma_ips_location =
+            fmt::format("{}luma/sysmodules/{:016X}.ips",
+                        FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir), ncch_header.program_id);
+    } else {
+        luma_ips_location =
+            fmt::format("{}luma/titles/{:016X}/code.ips",
+                        FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir), ncch_header.program_id);
+    }
+    
+    const std::array<PatchLocation, 7> default_patch_paths{{
+        {luma_ips_location, Patch::ApplyIpsPatch},
+        {filepath + ".exefsdir/code.ips", Patch::ApplyIpsPatch},
+        {filepath + ".exefsdir/code.bps", Patch::ApplyBpsPatch},
+    }};
+
+    for (const PatchLocation& info : default_patch_paths) {
+        FileUtil::IOFile patch_file{info.path, "rb"};
+        std::vector<u8> patch(patch_file.GetSize());
+        if (patch_file.ReadBytes(patch.data(), patch.size()) == patch.size()) {
+            LOG_INFO(Service_FS, "File {} patching code.bin", info.path);
+            info.patch_fn(patch, code)
+        }
+    }
 
     if (mod_data.empty()) {
         LOG_WARNING(Service_FS, "No mod folders found.");
