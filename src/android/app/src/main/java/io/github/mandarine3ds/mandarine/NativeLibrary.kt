@@ -680,7 +680,7 @@ object NativeLibrary {
     @JvmStatic
     fun getModsDirs(value: Long): List<Pair<String, Boolean>> {
         val modList = mutableListOf<Pair<String, Boolean>>()
-        val addons = AddonsHelper.getAddons(value)
+        val addons = AddonsHelper.getAddons(titleId = value)
 
         addons.forEach { addon ->
             if (addon is Mod) {
