@@ -205,19 +205,32 @@ std::vector<std::pair<std::string, bool>> GetModsDirs(u64 titleId) {
         if (!pairObject) continue;
 
         jstring first = (jstring)env->GetObjectField(pairObject, firstField);
+        if (!first) {
+            env->DeleteLocalRef(pairObject);
+            continue;
+        }
+
         jobject second = env->GetObjectField(pairObject, secondField);
 
         const char* firstStr = env->GetStringUTFChars(first, nullptr);
-        bool secondBool = env->CallBooleanMethod(second, env->GetMethodID(env->FindClass("java/lang/Boolean"), "booleanValue", "()Z"));
+        bool secondBool = second ? env->CallBooleanMethod(second, env->GetMethodID(env->FindClass("java/lang/Boolean"), "booleanValue", "()Z")) : false;
 
         result.emplace_back(std::string(firstStr), secondBool);
 
         env->ReleaseStringUTFChars(first, firstStr);
+        env->DeleteLocalRef(first);
+        if (second) env->DeleteLocalRef(second);
         env->DeleteLocalRef(pairObject);
     }
 
+    env->DeleteLocalRef(listObject);
+    env->DeleteLocalRef(dataProviderClass);
+    env->DeleteLocalRef(listClass);
+    env->DeleteLocalRef(pairClass);
+
     return result;
 }
+
 
 #define FR(FunctionName, ReturnValue, JMethodID, Caller, JMethodName, Signature)                   \
     F(FunctionName, ReturnValue, JMethodID, Caller)
