@@ -19,12 +19,10 @@ import java.io.IOException
 object AddonsHelper {
     const val KEY_MODS = "Mods"
 
-    private lateinit var preferences: SharedPreferences
+    private lateinit val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(MandarineApplication.appContext) }
 
     private fun getMods(): List<Mod> {
         var mods = mutableListOf<Mod>()
-        val context = MandarineApplication.appContext
-        preferences = PreferenceManager.getDefaultSharedPreferences(context)
         val serializedMods = preferences.getStringSet(KEY_MODS, emptySet()) ?: emptySet()
         mods = serializedMods.map { Json.decodeFromString<Mod>(it) }.toMutableList()
         mods.forEach { mod ->
@@ -52,7 +50,6 @@ object AddonsHelper {
     }
 
     fun addMod(uri: Uri, installedPath: Uri, game: Game, title: String? = null) {
-        preferences = PreferenceManager.getDefaultSharedPreferences(MandarineApplication.appContext)
         val serializedMods = preferences.getStringSet(KEY_MODS, emptySet()) ?: emptySet()
         val mods = serializedMods.map { Json.decodeFromString<Mod>(it) }.toMutableList()
         mods.add(getMod(uri, installedPath, game, title))
@@ -77,6 +74,29 @@ object AddonsHelper {
         val titleID = if (game.titleId != 0L) game.titleId else titleId
         return mods.filter { mod ->  
             mod.titleId.toInt() == titleID.toInt()
+        }
+    }
+
+    fun Addon.enable(value: Boolean) {
+        if (this is Mod) {
+            val serializedMods = preferences.getStringSet(KEY_MODS, emptySet()) ?: emptySet()
+            val mods = serializedMods.map { Json.decodeFromString<Mod>(it) }.toMutableList()
+            var modUpdated = false
+            mods.forEach { mod ->
+                if (mod.installedPath == this.installedPath) {
+                    mod.enabled = value
+                    modUpdated = true
+                }
+            }
+
+            if (modUpdated) {
+                val newSerializedMods = mods.map { Json.encodeToString(it) }.toMutableSet()
+
+                preferences.edit()
+                    .remove(KEY_MODS)
+                    .putStringSet(KEY_MODS, newSerializedMods)
+                    .apply()
+            }
         }
     }
 }
