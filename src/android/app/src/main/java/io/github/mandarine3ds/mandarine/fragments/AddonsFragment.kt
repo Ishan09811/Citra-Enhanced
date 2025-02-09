@@ -77,12 +77,14 @@ class AddonsFragment : Fragment() {
             (binding.listAddons.adapter as AddonsAdapter).updateList(it)
         }
 
-        addonViewModel.dialogState.collect { event ->
-            when (event) {
-                is DialogEvent.ShowErrorDialog -> {
-                    showErrorDialog(event.message)
+        lifecycleScope.launchWhenStarted {
+            addonViewModel.dialogState.collect { event ->
+                when (event) {
+                    is DialogEvent.ShowErrorDialog -> {
+                        showErrorDialog(event.message)
+                    }
+                    DialogEvent.None -> Unit
                 }
-                DialogEvent.None -> Unit
             }
         }
         
