@@ -685,7 +685,7 @@ object NativeLibrary {
 
         addons.forEach { addon ->
             if (addon is Mod) {
-                modList.add(Pair("/load/mods/${String.format("%016X", titleId)}/" + FileUtil.getFilename(Uri.parse(addon.installedPath)), addon.enabled))
+                modList.add(Pair("/load/mods/${String.format("%016X", value)}/" + FileUtil.getFilename(Uri.parse(addon.installedPath)), addon.enabled))
             }
         }
         return modList.toList()
