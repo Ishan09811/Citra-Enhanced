@@ -10,7 +10,6 @@ import io.github.mandarine3ds.mandarine.utils.AddonsHelper.enable
 
 class AddonsAdapter(
     private var addonList: List<Addon> = listOf()
-    private val addonViewModel: AddonViewModel
 ) : RecyclerView.Adapter<AddonsAdapter.AddonViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AddonViewHolder {
@@ -39,8 +38,10 @@ class AddonsAdapter(
             binding.addon = addon
             binding.addonSwitch.isChecked = addon.enabled
             binding.addonSwitch.setOnCheckedChangeListener { _, isChecked ->
-                addon.enabled = isChecked
-                addon.enable(isChecked) // saves the value
+                if (addon is Mod) {
+                    addon.enabled = isChecked
+                    addon.enable(isChecked) // saves the value
+                }
             }
         }
     }
