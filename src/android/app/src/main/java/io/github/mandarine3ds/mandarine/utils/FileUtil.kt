@@ -694,6 +694,21 @@ object FileUtil {
     fun Uri.asDocumentFile(): DocumentFile? =
         DocumentFile.fromSingleUri(MandarineApplication.appContext, this)
 
+    fun Uri.toPath(): String {
+        if (this.authority == "com.android.externalstorage.documents") {
+            val parts = this.path?.split(":") ?: return ""
+            val type = parts[0].substringAfterLast('/')
+            val relativePath = parts[1]
+            val fullPath = when (type) {
+                "primary" -> "/storage/emulated/0/$relativePath"
+                else -> "/storage/$type/$relativePath"
+            }
+            Log.w("FileUtil", "converted ${this.toString()} to: $fullPath")
+            return fullPath   
+        }
+        return ""
+    }
+
     interface CopyDirListener {
         fun onSearchProgress(directoryName: String)
         fun onCopyProgress(filename: String, progress: Int, max: Int)
