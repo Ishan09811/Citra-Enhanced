@@ -574,59 +574,59 @@ Loader::ResultStatus NCCHContainer::ApplyCodePatch(std::vector<u8>& code) const 
         bool (*patch_fn)(const std::vector<u8>& patch, std::vector<u8>& code);
     };
 
-    std::vector<PatchLocation> patch_paths;
-
-    const auto mod_data = FileUtil::GetModsDirs(ncch_header.program_id);
+    const auto mods_path =
+        fmt::format("{}mods/{:016X}/", FileUtil::GetUserPath(FileUtil::UserPath::LoadDir),
+                    GetModId(ncch_header.program_id));
 
     constexpr u32 system_module_tid_high = 0x00040130;
-    std::string luma_ips_location = (static_cast<u32>(ncch_header.program_id >> 32) & system_module_tid_high) == system_module_tid_high
-                                    ? fmt::format("{}luma/sysmodules/{:016X}.ips",
-                                                  FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir),
-                                                  ncch_header.program_id)
-                                    : fmt::format("{}luma/titles/{:016X}/code.ips",
-                                                  FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir),
-                                                  ncch_header.program_id);
 
-    patch_paths.push_back({luma_ips_location, Patch::ApplyIpsPatch});
-    patch_paths.push_back({filepath + ".exefsdir/code.ips", Patch::ApplyIpsPatch});
-    patch_paths.push_back({filepath + ".exefsdir/code.bps", Patch::ApplyBpsPatch});
-
-    for (const auto& [mod_folder, is_enabled] : mod_data) {
-        if (!is_enabled) {
-            LOG_INFO(Service_FS, "Skipping mod folder: {}", mod_folder);
-            continue;
-        }
-        patch_paths.emplace_back(mod_folder + "/code.ips", Patch::ApplyIpsPatch);
-        patch_paths.emplace_back(mod_folder + "/code.bps", Patch::ApplyBpsPatch);
+    std::string luma_ips_location;
+    if ((static_cast<u32>(ncch_header.program_id >> 32) & system_module_tid_high) ==
+        system_module_tid_high) {
+        luma_ips_location =
+            fmt::format("{}luma/sysmodules/{:016X}.ips",
+                        FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir), ncch_header.program_id);
+    } else {
+        luma_ips_location =
+            fmt::format("{}luma/titles/{:016X}/code.ips",
+                        FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir), ncch_header.program_id);
     }
 
-    bool patch_applied = false;
+    std::vector<PatchLocation> patch_paths = {
+        {mods_path + "exefs/code.ips", Patch::ApplyIpsPatch},
+        {mods_path + "exefs/code.bps", Patch::ApplyBpsPatch},
+        {mods_path + "code.ips", Patch::ApplyIpsPatch},
+        {mods_path + "code.bps", Patch::ApplyBpsPatch},
+        {luma_ips_location, Patch::ApplyIpsPatch},
+        {filepath + ".exefsdir/code.ips", Patch::ApplyIpsPatch},
+        {filepath + ".exefsdir/code.bps", Patch::ApplyBpsPatch},
+    };
 
-    for (const auto& info : patch_paths) {
-        FileUtil::IOFile patch_file{info.path, "rb"};
-        if (!patch_file) {
-            LOG_WARNING(Service_FS, "Patch file not found: {}", info.path);
-            continue;
+    const auto mod_dirs = FileUtil::GetModsDirs(ncch_header.program_id);
+    for (const auto& [path, apply] : mod_dirs) {
+        if (apply) {
+            patch_paths.push_back({path + "/code.ips", Patch::ApplyIpsPatch});
+            patch_paths.push_back({path + "/code.bps", Patch::ApplyBpsPatch});
         }
+    }
+
+    for (const PatchLocation& info : patch_paths) {
+        FileUtil::IOFile patch_file{info.path, "rb"};
+        if (!patch_file)
+            continue;
 
         std::vector<u8> patch(patch_file.GetSize());
-        if (patch_file.ReadBytes(patch.data(), patch.size()) != patch.size()) {
-            LOG_ERROR(Service_FS, "Error reading patch file: {}", info.path);
-            continue;
-        }
-
-        LOG_INFO(Service_FS, "Applying patch from file: {}", info.path);
-        if (!info.patch_fn(patch, code)) {
-            LOG_ERROR(Service_FS, "Failed to apply patch: {}", info.path);
+        if (patch_file.ReadBytes(patch.data(), patch.size()) != patch.size())
             return Loader::ResultStatus::Error;
-        }
 
-        patch_applied = true;
+        LOG_INFO(Service_FS, "File {} patching code.bin", info.path);
+        if (!info.patch_fn(patch, code))
+            return Loader::ResultStatus::Error;
+
+        return Loader::ResultStatus::Success;
     }
-
-    return patch_applied ? Loader::ResultStatus::Success : Loader::ResultStatus::ErrorNotUsed;
+    return Loader::ResultStatus::ErrorNotUsed;
 }
-
 
 Loader::ResultStatus NCCHContainer::LoadOverrideExeFSSection(const char* name,
                                                              std::vector<u8>& buffer) {
