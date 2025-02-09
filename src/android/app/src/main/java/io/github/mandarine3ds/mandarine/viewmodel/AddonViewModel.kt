@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import io.github.mandarine3ds.mandarine.utils.AddonsHelper
+import io.github.mandarine3ds.mandarine.utils.AddonsHelper.AddonInstallResult
 import io.github.mandarine3ds.mandarine.model.Game
 import io.github.mandarine3ds.mandarine.model.Addon
 import java.util.concurrent.atomic.AtomicBoolean
@@ -63,9 +64,9 @@ class AddonViewModel : ViewModel() {
             withContext(Dispatchers.IO) {
                 val result = AddonsHelper.installMod(uri, currentGame)
                 when (result) {
-                    UnknownError -> showErrorDialog("An unknown error occurred while installing addon")
-                    InvalidArchive -> showErrorDialog("Selected addon file isn't supported")
-                    AlreadyInstalled -> showErrorDialog("Selected addon file is already installed")
+                    AddonInstallResult.UnknownError -> showErrorDialog("An unknown error occurred while installing addon")
+                    AddonInstallResult.InvalidArchive -> showErrorDialog("Selected addon file isn't supported")
+                    AddonInstallResult.AlreadyInstalled -> showErrorDialog("Selected addon file is already installed")
                 }
             }
         }
