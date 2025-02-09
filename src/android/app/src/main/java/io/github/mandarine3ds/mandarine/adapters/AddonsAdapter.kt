@@ -6,9 +6,11 @@ import androidx.recyclerview.widget.RecyclerView
 import io.github.mandarine3ds.mandarine.databinding.ListItemAddonsBinding
 import io.github.mandarine3ds.mandarine.model.Mod
 import io.github.mandarine3ds.mandarine.model.Addon
+import io.github.mandarine3ds.mandarine.utils.AddonsHelper.enable
 
 class AddonsAdapter(
     private var addonList: List<Addon> = listOf()
+    private val addonViewModel: AddonViewModel
 ) : RecyclerView.Adapter<AddonsAdapter.AddonViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AddonViewHolder {
@@ -35,9 +37,10 @@ class AddonsAdapter(
 
         fun bind(addon: Addon) {
             binding.addon = addon
-            binding.addonSwitch.isChecked = true // Default state;
+            binding.addonSwitch.isChecked = addon.enabled
             binding.addonSwitch.setOnCheckedChangeListener { _, isChecked ->
-                //TODO: handle
+                addon.enabled = isChecked
+                addon.enable(isChecked) // saves the value
             }
         }
     }
