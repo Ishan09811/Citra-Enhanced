@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 class AddonViewModel : ViewModel() {
     private val _addonList = MutableStateFlow(mutableListOf<Addon>())
     val addonList get() = _addonList.asStateFlow()
+    private val _dialogState = MutableStateFlow<DialogEvent>(DialogEvent.None)
+    val dialogState = _dialogState.asStateFlow()
 
     var game: Game? = null
 
@@ -27,6 +29,14 @@ class AddonViewModel : ViewModel() {
     fun onOpenAddons(game: Game) {
         this.game = game
         refreshAddons()
+    }
+
+    fun showErrorDialog(message: String) {
+        _dialogState.value = DialogEvent.ShowErrorDialog(message)
+    }
+
+    fun dismissErrorDialog() {
+        _dialogState.value = DialogEvent.None
     }
 
     fun refreshAddons() {
