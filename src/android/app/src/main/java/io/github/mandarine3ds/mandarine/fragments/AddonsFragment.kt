@@ -19,6 +19,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.transition.MaterialSharedAxis
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import io.github.mandarine3ds.mandarine.R
 import io.github.mandarine3ds.mandarine.adapters.AddonsAdapter
@@ -75,12 +76,32 @@ class AddonsFragment : Fragment() {
         addonViewModel.addonList.collect(viewLifecycleOwner) {
             (binding.listAddons.adapter as AddonsAdapter).updateList(it)
         }
+
+        addonViewModel.dialogState.collect { event ->
+            when (event) {
+                is DialogEvent.ShowErrorDialog -> {
+                    showErrorDialog(event.message)
+                }
+                DialogEvent.None -> Unit
+            }
+        }
         
         binding.buttonInstall.setOnClickListener {
             installAddon.launch(arrayOf("application/zip"))
         }
 
         setInsets()
+    }
+
+    private fun showErrorDialog(message: String) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Error")
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+                addonViewModel.dismissErrorDialog()
+            }
+            .show()
     }
 
     override fun onResume() {
