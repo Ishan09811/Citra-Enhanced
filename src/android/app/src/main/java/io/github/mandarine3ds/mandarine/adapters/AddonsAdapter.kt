@@ -36,11 +36,11 @@ class AddonsAdapter(
 
         fun bind(addon: Addon) {
             binding.addon = addon
-            binding.addonSwitch.isChecked = addon.enabled
-            binding.addonSwitch.setOnCheckedChangeListener { _, isChecked ->
-                if (addon is Mod) {
-                    addon.enabled = isChecked
-                    addon.enable(isChecked) // saves the value
+            if (addon is Mod) {
+                binding.addonSwitch.isChecked = addon.enabled
+                binding.addonSwitch.setOnCheckedChangeListener { _, isChecked ->   
+                   addon.enabled = isChecked
+                   addon.enable(isChecked) // saves the value
                 }
             }
         }
