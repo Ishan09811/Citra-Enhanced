@@ -61,15 +61,17 @@ class AddonViewModel : ViewModel() {
         val currentGame = game ?: return
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                AddonsHelper.installMod(uri, currentGame)
+                val result = AddonsHelper.installMod(uri, currentGame)
+                when (result) {
+                    UnknownError -> showErrorDialog("An unknown error occurred while installing addon")
+                    InvalidArchive -> showErrorDialog("Selected addon file isn't supported")
+                    AlreadyInstalled -> showErrorDialog("Selected addon file is already installed")
+                }
             }
         }
     }
         
     fun onCloseAddons() {
-        if (_addonList.value.isEmpty()) {
-            return
-        }
-        //TODO: implement logic
+        //do nothing
     }
 }
