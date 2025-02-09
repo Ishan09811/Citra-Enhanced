@@ -625,9 +625,12 @@ Loader::ResultStatus NCCHContainer::ApplyCodePatch(std::vector<u8>& code) const 
             return Loader::ResultStatus::Error;
 
         LOG_INFO(Service_FS, "File {} patching code.bin", info.path);
-        if (!info.patch_fn(patch, code))
+        if (!info.patch_fn(patch, code)) {
+            LOG_WARNING(Service_FS, "Failed to apply patch from {}", info.path);
             return Loader::ResultStatus::Error;
+        }
 
+        patch_file.Close();
         return Loader::ResultStatus::Success;
     }
     return Loader::ResultStatus::ErrorNotUsed;
