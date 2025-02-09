@@ -585,10 +585,12 @@ object FileUtil {
                                     }
                                 }
                             }
+                        } else {
+                            subFolder.delete()
                         }
                     }
                 }
-                extractedFolderUri = subFolder.uri
+                extractedFolderUri = subFolder.uri ?: null
             }
         } catch (e: IOException) {
             e.printStackTrace()
