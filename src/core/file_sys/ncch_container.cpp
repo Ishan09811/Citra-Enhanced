@@ -611,6 +611,11 @@ Loader::ResultStatus NCCHContainer::ApplyCodePatch(std::vector<u8>& code) const 
     }
 
     for (const PatchLocation& info : patch_paths) {
+        if (!FileUtil::Exists(info.path)) {
+            LOG_INFO(Service_FS, "Patch file {} not found, skipping.", info.path);
+            continue;
+        }
+        
         FileUtil::IOFile patch_file{info.path, "rb"};
         if (!patch_file)
             continue;
