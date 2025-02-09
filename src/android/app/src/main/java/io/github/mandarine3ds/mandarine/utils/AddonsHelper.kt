@@ -64,11 +64,12 @@ object AddonsHelper {
             .apply()
     }
 
-    fun installMod(uri: Uri, game: Game) {
-        if (FileUtil.getExtension(uri) != "zip") return
+    fun installMod(uri: Uri, game: Game): AddonInstallResult {
+        if (FileUtil.getExtension(uri) != "zip") return AddonInstallResult.InvalidArchive
         val destDirUri = FileUtil.getModsDir(String.format("%016X", game.titleId)).uri!!
-        val extractedUri = FileUtil.extractMod(uri, destDirUri, String.format("%016X", game.titleId)) ?: return
+        val extractedUri = FileUtil.extractMod(uri, destDirUri, String.format("%016X", game.titleId)) ?: return AddonInstallResult.UnknownError
         addMod(uri, extractedUri, game)         
+        return AddonInstallResult.Success
     }
 
     fun getAddons(game: Game = Game(filename = ""), titleId: Long = 0L): List<Addon> {
@@ -100,5 +101,14 @@ object AddonsHelper {
                     .apply()
             }
         }
+    }
+
+    enum class AddonInstallResult {
+        Success,
+        UnknownError,
+        InvalidArchive,
+        MissingMetadata,
+        InvalidMetadata,
+        AlreadyInstalled,
     }
 }
