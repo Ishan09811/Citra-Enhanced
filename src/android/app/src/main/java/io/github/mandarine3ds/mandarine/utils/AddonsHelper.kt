@@ -19,7 +19,9 @@ import java.io.IOException
 object AddonsHelper {
     const val KEY_MODS = "Mods"
 
-    private lateinit val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(MandarineApplication.appContext) }
+    private val preferences: SharedPreferences by lazy {
+        PreferenceManager.getDefaultSharedPreferences(MandarineApplication.appContext)
+    }
 
     private fun getMods(): List<Mod> {
         var mods = mutableListOf<Mod>()
