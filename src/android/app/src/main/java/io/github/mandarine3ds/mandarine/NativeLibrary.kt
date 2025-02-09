@@ -23,6 +23,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.github.mandarine3ds.mandarine.activities.EmulationActivity
 import io.github.mandarine3ds.mandarine.utils.EmulationMenuSettings
 import io.github.mandarine3ds.mandarine.utils.FileUtil
+import io.github.mandarine3ds.mandarine.utils.FileUtil.toPath
 import io.github.mandarine3ds.mandarine.utils.Log
 import io.github.mandarine3ds.mandarine.utils.NetPlayManager
 import io.github.mandarine3ds.mandarine.utils.AddonsHelper
@@ -685,7 +686,7 @@ object NativeLibrary {
 
         addons.forEach { addon ->
             if (addon is Mod) {
-                modList.add(Pair(File(Uri.parse(addon.installedPath).path!!).absolutePath!!, addon.enabled))
+                modList.add(Pair(Uri.parse(addon.installedPath).toPath(), addon.enabled))
             }
         }
         return modList.toList()
