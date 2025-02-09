@@ -180,29 +180,36 @@ std::vector<std::pair<std::string, bool>> GetModsDirs(u64 titleId) {
 
     auto env = GetEnvForThread();
     if (!env) return result;
-    
-    jclass dataProviderClass = env->FindClass("io/github/mandarine3ds/mandarine/NativeLibrary");
-    if (!dataProviderClass) return result;
 
-    jmethodID getDataMethod = env->GetStaticMethodID(dataProviderClass, "getModsDirs", "()Ljava/util/List;");
-    if (!getDataMethod) return result;
+    jclass dataProviderClass = env->FindClass("io/github/mandarine3ds/mandarine/NativeLibrary");
+    if (!dataProviderClass || env->ExceptionCheck()) return result;
+
+    jmethodID getDataMethod = env->GetStaticMethodID(dataProviderClass, "getModsDirs", "(J)Ljava/util/List;");
+    if (!getDataMethod || env->ExceptionCheck()) return result;
 
     jobject listObject = env->CallStaticObjectMethod(dataProviderClass, getDataMethod, static_cast<jlong>(titleId));
-    if (!listObject) return result;
+    if (!listObject || env->ExceptionCheck()) return result;
 
     jclass listClass = env->FindClass("java/util/List");
+    if (!listClass || env->ExceptionCheck()) return result;
+
     jmethodID listGet = env->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
     jmethodID listSize = env->GetMethodID(listClass, "size", "()I");
+    if (!listGet || !listSize || env->ExceptionCheck()) return result;
 
     jint size = env->CallIntMethod(listObject, listSize);
+    if (env->ExceptionCheck()) return result;
 
     jclass pairClass = env->FindClass("kotlin/Pair");
+    if (!pairClass || env->ExceptionCheck()) return result;
+
     jfieldID firstField = env->GetFieldID(pairClass, "first", "Ljava/lang/Object;");
     jfieldID secondField = env->GetFieldID(pairClass, "second", "Ljava/lang/Object;");
+    if (!firstField || !secondField || env->ExceptionCheck()) return result;
 
     for (int i = 0; i < size; ++i) {
         jobject pairObject = env->CallObjectMethod(listObject, listGet, i);
-        if (!pairObject) continue;
+        if (!pairObject || env->ExceptionCheck()) continue;
 
         jstring first = (jstring)env->GetObjectField(pairObject, firstField);
         if (!first) {
@@ -230,7 +237,6 @@ std::vector<std::pair<std::string, bool>> GetModsDirs(u64 titleId) {
 
     return result;
 }
-
 
 #define FR(FunctionName, ReturnValue, JMethodID, Caller, JMethodName, Signature)                   \
     F(FunctionName, ReturnValue, JMethodID, Caller)
