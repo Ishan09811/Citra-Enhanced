@@ -17,7 +17,7 @@ data class Mod(
     val filename: String = "",
     val installedPath: String = "",
     val titleId: Long,
-    val enabled: Boolean = true
+    var enabled: Boolean = true
 ) : Addon
 
 @Serializable
@@ -27,5 +27,5 @@ data class CustomTexture(
     val filename: String = "",
     val installedPath: String = "",
     val titleId: Long,
-    val enabled: Boolean = true
+    var enabled: Boolean = true
 ) : Addon
