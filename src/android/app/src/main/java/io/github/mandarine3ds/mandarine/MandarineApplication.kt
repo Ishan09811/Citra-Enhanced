@@ -15,6 +15,9 @@ import io.github.mandarine3ds.mandarine.utils.DocumentsTree
 import io.github.mandarine3ds.mandarine.utils.PermissionsHandler
 import io.github.mandarine3ds.mandarine.utils.Log
 import io.github.mandarine3ds.mandarine.utils.MemoryUtil
+import java.io.File
+
+fun Context.getPublicFilesDir() : File = getExternalFilesDir(null) ?: filesDir
 
 class MandarineApplication : Application() {
     private fun createNotificationChannel() {

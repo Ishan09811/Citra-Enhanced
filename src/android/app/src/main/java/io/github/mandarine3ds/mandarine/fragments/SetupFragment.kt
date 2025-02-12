@@ -373,9 +373,9 @@ class SetupFragment : Fragment() {
 
                     if (button.isUnskippable) {
                         MessageDialogFragment.newInstance(
-                            button.warningTitleId,
-                            button.warningDescriptionId,
-                            button.warningHelpLinkId
+                            title = button.warningTitleId,
+                            description = button.warningDescriptionId,
+                            helpLinkId = button.warningHelpLinkId
                         ).show(childFragmentManager, MessageDialogFragment.TAG)
                         return@setOnClickListener
                     }

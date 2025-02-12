@@ -21,6 +21,7 @@ import android.widget.Toast
 import android.util.Log
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -59,6 +60,7 @@ import io.github.mandarine3ds.mandarine.utils.ViewUtils.marquee
 import io.github.mandarine3ds.mandarine.utils.ViewUtils.updateMargins
 import io.github.mandarine3ds.mandarine.utils.collect
 import io.github.mandarine3ds.mandarine.utils.ThemeUtil
+import io.github.mandarine3ds.mandarine.utils.SaveManagementUtils
 import java.io.BufferedOutputStream
 import java.io.File
 import kotlin.math.abs
@@ -86,11 +88,18 @@ class GameAboutFragment : Fragment() {
         handleShortcutIconResult(uri)
     }
 
+    private var isSaveFileOfThisGame: Boolean = false
+
+    private lateinit var documentPicker : ActivityResultLauncher<Array<String>>
+    private lateinit var startForResultExportSave : ActivityResultLauncher<String>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
         returnTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
         reenterTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
+	documentPicker = SaveManagementUtils.registerDocumentPicker(requireActivity(), String.format("%016X", args.game.titleId))
+        startForResultExportSave = SaveManagementUtils.registerStartForResultExportSave(requireActivity())
         setHasOptionsMenu(true)
     }
 
@@ -121,7 +130,6 @@ class GameAboutFragment : Fragment() {
 
             if (collapseThreshold) {
                 binding.toolbar.animate().alpha(1f).setDuration(300).start()
-		//updateToolbarTitleStyle(false)
                 (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(true)
                 homeViewModel.setStatusBarShadeVisibility(false)
 		setStatusBarLightTheme(shouldLightStatusBar)
@@ -129,13 +137,11 @@ class GameAboutFragment : Fragment() {
                 if (binding.toolbar.alpha > 0f) {
                     binding.toolbar.animate().alpha(0f).setDuration(300).start()
                 }
-		//updateToolbarTitleStyle(true)
                 (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(false)
                 homeViewModel.setStatusBarShadeVisibility(true)
 		setStatusBarLightTheme(!ThemeUtil.isNightMode(requireActivity() as AppCompatActivity))
             } else {
                 binding.toolbar.animate().alpha(progress).setDuration(300).start()
-		//updateToolbarTitleStyle(false)
                 (requireActivity() as? AppCompatActivity)?.getSupportActionBar()?.setDisplayShowTitleEnabled(true)
                 homeViewModel.setStatusBarShadeVisibility(false)
 		setStatusBarLightTheme(shouldLightStatusBar)
@@ -155,7 +161,7 @@ class GameAboutFragment : Fragment() {
  
                         binding.appBarLayout.setBackgroundColor(dominantColor)
                         binding.collapsingToolbarLayout.setContentScrimColor(dominantColor)
-			//binding.collapsingToolbarLayout.setExpandedTitleColor(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
+			binding.collapsingToolbarLayout.setExpandedTitleColor(Color.WHITE)
                         binding.collapsingToolbarLayout.setCollapsedTitleTextColor(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
 			binding.toolbar.setBackgroundColor(dominantColor)
 			binding.toolbar.setNavigationIconTint(if (isLightColor(dominantColor)) Color.BLACK else Color.WHITE)
@@ -187,19 +193,6 @@ class GameAboutFragment : Fragment() {
     private fun setStatusBarLightTheme(value: Boolean) {
 	WindowCompat.getInsetsController((requireActivity() as AppCompatActivity).window, (requireActivity() as AppCompatActivity).window.decorView).isAppearanceLightStatusBars = value
     }
-
-    /*private fun updateToolbarTitleStyle(value: Boolean) {
-	val spannableTitle = SpannableString(args.game.title).apply {
-            if (value) {
-                setSpan(
-                    BackgroundColorSpan(Color.parseColor("#80000000")),
-                    0, length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
-        }
-	binding.collapsingToolbarLayout.title = spannableTitle
-    }*/
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
@@ -246,6 +239,24 @@ class GameAboutFragment : Fragment() {
                     val action = GameAboutFragmentDirections
                         .actionGameAboutFragmentToAddonsFragment(args.game)
                     binding.root.findNavController().navigate(action)
+                }
+            )
+	    add(
+                SubmenuGameAbout(
+                    R.string.save_data,
+                    R.string.save_data_description,
+                    R.drawable.ic_save,
+                ) {
+                    MessageDialogFragment.newInstance(
+                        requireActivity(),
+                        title = R.string.save_management,
+			positiveButtonTitle = R.string.misc_import,
+			negativeButtonTitle = R.string.export,
+			neutralButtonTitle = android.R.string.cancel,
+                        positiveAction = { SaveManagementUtils.importSave(documentPicker) },
+			negativeAction = { SaveManagementUtils.exportSave(startForResultExportSave, String.format("%016X", args.game.titleId), "${args.game.title} (v1.0) [${String.format("%016X", args.game.titleId)}]") },
+			neutralAction = { null }
+                    ).show(parentFragmentManager, MessageDialogFragment.TAG)
                 }
             )
         }
