@@ -79,7 +79,7 @@ class DownloadSystemFilesDialogFragment : DialogFragment() {
                             InstallStatus.Success -> {
                                 downloadViewModel.clear()
                                 dismiss()
-                                MessageDialogFragment.newInstance(R.string.download_success, 0)
+                                MessageDialogFragment.newInstance(title = R.string.download_success, description = 0)
                                     .show(requireActivity().supportFragmentManager, MessageDialogFragment.TAG)
                                 gamesViewModel.setShouldSwapData(true)
                             }
@@ -92,8 +92,8 @@ class DownloadSystemFilesDialogFragment : DialogFragment() {
                                 downloadViewModel.clear()
                                 dismiss()
                                 MessageDialogFragment.newInstance(
-                                    R.string.download_failed,
-                                    R.string.download_failed_description
+                                    title = R.string.download_failed,
+                                    description = R.string.download_failed_description
                                 ).show(requireActivity().supportFragmentManager, MessageDialogFragment.TAG)
                                 gamesViewModel.setShouldSwapData(true)
                             }
@@ -102,8 +102,8 @@ class DownloadSystemFilesDialogFragment : DialogFragment() {
                                 downloadViewModel.clear()
                                 dismiss()
                                 MessageDialogFragment.newInstance(
-                                    R.string.download_cancelled,
-                                    R.string.download_cancelled_description
+                                    title = R.string.download_cancelled,
+                                    description = R.string.download_cancelled_description
                                 ).show(requireActivity().supportFragmentManager, MessageDialogFragment.TAG)
                             }
 

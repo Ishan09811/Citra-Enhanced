@@ -95,8 +95,8 @@ class SystemFilesFragment : Fragment() {
         val preferences = PreferenceManager.getDefaultSharedPreferences(MandarineApplication.appContext)
         if (!preferences.getBoolean(WARNING_SHOWN, false)) {
             MessageDialogFragment.newInstance(
-                R.string.home_menu_warning,
-                R.string.home_menu_warning_description
+                title = R.string.home_menu_warning,
+                description = R.string.home_menu_warning_description
             ).show(childFragmentManager, MessageDialogFragment.TAG)
             preferences.edit()
                 .putBoolean(WARNING_SHOWN, true)

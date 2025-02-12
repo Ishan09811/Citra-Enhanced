@@ -220,7 +220,7 @@ class DriverManagerFragment : Fragment() {
 
             val progressDialog = MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Downloading Driver")
-                .setView(R.layout.dialog_progress)
+                .setView(R.layout.dialog_progress_bar)
                 .setCancelable(false)
                 .create()
             progressDialog.show()

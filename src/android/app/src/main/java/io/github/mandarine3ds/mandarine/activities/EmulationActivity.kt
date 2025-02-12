@@ -167,8 +167,8 @@ class EmulationActivity : AppCompatActivity() {
                     shouldShowRequestPermissionRationale(permission.CAMERA)
                 ) {
                     MessageDialogFragment.newInstance(
-                        R.string.camera,
-                        R.string.camera_permission_needed
+                        title = R.string.camera,
+                        description = R.string.camera_permission_needed
                     ).show(supportFragmentManager, MessageDialogFragment.TAG)
                 }
                 NativeLibrary.cameraPermissionResult(
@@ -181,8 +181,8 @@ class EmulationActivity : AppCompatActivity() {
                     shouldShowRequestPermissionRationale(permission.RECORD_AUDIO)
                 ) {
                     MessageDialogFragment.newInstance(
-                        R.string.microphone,
-                        R.string.microphone_permission_needed
+                        title = R.string.microphone,
+                        description = R.string.microphone_permission_needed
                     ).show(supportFragmentManager, MessageDialogFragment.TAG)
                 }
                 NativeLibrary.micPermissionResult(
@@ -281,8 +281,8 @@ class EmulationActivity : AppCompatActivity() {
         val success = NativeLibrary.loadAmiibo(selectedFile)
         if (!success) {
             MessageDialogFragment.newInstance(
-                R.string.amiibo_load_error,
-                R.string.amiibo_load_error_message
+                title = R.string.amiibo_load_error,
+                description = R.string.amiibo_load_error_message
             ).show(supportFragmentManager, MessageDialogFragment.TAG)
         }
     }

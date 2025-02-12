@@ -322,6 +322,7 @@
     <string name="ini_saved">Saved settings</string>
     <string name="gameid_saved">Saved settings for %1$s</string>
     <string name="error_saving">Error saving %1$s.ini: %2$s</string>
+    <string name="error">Error</string>
     <string name="loading">Loading…</string>
     <string name="next">Next</string>
     <string name="back">Back</string>
@@ -510,6 +511,14 @@
     <string name="author">Author</string>
     <string name="version">Version</string>
     <string name="path">Path</string>
+    <string name="save_file_invalid_zip_structure">Invalid ZIP structure!</string>
+    <string name="save_file_imported_ok">Save file imported successfully!</string>
+    <string name="save_exported_successfully">Save file exported successfully</string>
+    <string name="save_data">Save Data</string>
+    <string name="save_data_description">Manage save data specific to this game</string>
+    <string name="save_management">Save Management</string>
+    <string name="misc_import">Import</string>
+    
 
     <!-- Cheats -->
     <string name="cheats">Cheats</string>

@@ -477,8 +477,8 @@ class SettingsAdapter(
 
     fun onClickDisabledSetting() {
         MessageDialogFragment.newInstance(
-            R.string.setting_not_editable,
-            R.string.setting_not_editable_description
+            title = R.string.setting_not_editable,
+            description = R.string.setting_not_editable_description
         ).show((fragmentView as SettingsFragment).childFragmentManager, MessageDialogFragment.TAG)
     }
 

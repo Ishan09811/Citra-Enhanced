@@ -315,9 +315,9 @@ class SetupFragment : Fragment() {
 
                 if (currentPage.isUnskippable) {
                     MessageDialogFragment.newInstance(
-                        currentPage.warningTitleId,
-                        currentPage.warningDescriptionId,
-                        currentPage.warningHelpLinkId
+                        title = currentPage.warningTitleId,
+                        description = currentPage.warningDescriptionId,
+                        helpLinkId = currentPage.warningHelpLinkId
                     ).show(childFragmentManager, MessageDialogFragment.TAG)
                     return@setOnClickListener
                 }

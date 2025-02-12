@@ -47,7 +47,7 @@ object SoftwareKeyboard {
             else -> emulationActivity.getString(R.string.invalid_input)
         }
 
-        MessageDialogFragment.newInstance(R.string.software_keyboard, message).show(
+        MessageDialogFragment.newInstance(title = R.string.software_keyboard, description = message).show(
             NativeLibrary.sEmulationActivity.get()!!.supportFragmentManager,
             MessageDialogFragment.TAG
         )
