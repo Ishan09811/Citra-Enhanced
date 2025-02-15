@@ -236,7 +236,7 @@ class DriverManagerFragment : Fragment() {
                 // when using unit it stays to of this unit origin thread that's why we need to use main thread
                 GlobalScope.launch(Dispatchers.Main) {
                     if (totalBytes > 0) {
-                        if (progressBar?.isIndeterminate?) progressBar?.isIndeterminate = false
+                        if (progressBar?.isIndeterminate ?: false) progressBar?.isIndeterminate = false
                         if (progressText?.visibility == View.GONE) progressText?.visibility = View.VISIBLE
                         val progress = (downloadedBytes * 100 / totalBytes).toInt()
                         progressBar?.max = 100
@@ -244,7 +244,7 @@ class DriverManagerFragment : Fragment() {
                         progressText?.text = "$progress%"
                     } else { 
                         if (progressText?.visibility == View.VISIBLE) progressText?.visibility = View.GONE  
-                        if (!progressBar?.isIndeterminate?) progressBar?.isIndeterminate = true
+                        if (!(progressBar?.isIndeterminate ?: false)) progressBar?.isIndeterminate = true
                     }
                 }
             }
