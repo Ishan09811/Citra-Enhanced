@@ -92,7 +92,7 @@ class DriverManagerFragment : Fragment() {
             )
         }
 
-        if (!GpuDriverHelper.supportsCustomDriverLoading()) {
+        /*if (!GpuDriverHelper.supportsCustomDriverLoading()) {
             binding.buttonInstall.visibility = View.GONE
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Unsupported")
@@ -101,7 +101,7 @@ class DriverManagerFragment : Fragment() {
                     driverViewModel.setSelectedDriverIndex(0)
                 }
                 .show()
-        }
+        }*/
 
         binding.toolbarDrivers.setNavigationOnClickListener {
             binding.root.findNavController().popBackStack()
