@@ -232,14 +232,17 @@ class DriverManagerFragment : Fragment() {
             progressBar?.isIndeterminate = false
 
             val result = DriversFetcher.downloadAsset(requireContext(), chosenUrl, createZipFile!!.uri) { downloadedBytes, totalBytes ->
-                if (totalBytes > 0) {
-                    val progress = (downloadedBytes * 100 / totalBytes).toInt()
-                    progressBar?.max = 100
-                    progressBar?.progress = progress
-                    progressText?.text = "$progress%"
-                } else { 
-                    progressBar?.isIndeterminate = true
-                    progressText?.visibility = View.GONE
+                // when using unit it stays to of this unit origin thread that's why we need to use main thread
+                withContext(Dispatchers.Main) {
+                    if (totalBytes > 0) {
+                        val progress = (downloadedBytes * 100 / totalBytes).toInt()
+                        progressBar?.max = 100
+                        progressBar?.progress = progress
+                        progressText?.text = "$progress%"
+                    } else { 
+                        progressBar?.isIndeterminate = true
+                        progressText?.visibility = View.GONE
+                    }
                 }
             }
             progressDialog.dismiss()
