@@ -229,19 +229,22 @@ class DriverManagerFragment : Fragment() {
 
             val progressBar = progressDialog.findViewById<LinearProgressIndicator>(R.id.progress_bar)
             val progressText = progressDialog.findViewById<TextView>(R.id.progress_text)
-            progressBar?.isIndeterminate = false
+            progressText?.visibility = View.GONE  
+            progressBar?.isIndeterminate = true
 
             val result = DriversFetcher.downloadAsset(requireContext(), chosenUrl, createZipFile!!.uri) { downloadedBytes, totalBytes ->
                 // when using unit it stays to of this unit origin thread that's why we need to use main thread
                 GlobalScope.launch(Dispatchers.Main) {
                     if (totalBytes > 0) {
+                        if (progressBar?.isIndeterminate) progressBar?.isIndeterminate = false
+                        if (progressText?.visibility == View.GONE) progressText?.visibility = View.VISIBLE
                         val progress = (downloadedBytes * 100 / totalBytes).toInt()
                         progressBar?.max = 100
                         progressBar?.progress = progress
                         progressText?.text = "$progress%"
                     } else { 
-                        progressBar?.isIndeterminate = true
-                        progressText?.visibility = View.GONE
+                        if (progressText?.visibility == View.VISIBLE) progressText?.visibility = View.GONE  
+                        if (!progressBar?.isIndeterminate) progressBar?.isIndeterminate = true
                     }
                 }
             }
