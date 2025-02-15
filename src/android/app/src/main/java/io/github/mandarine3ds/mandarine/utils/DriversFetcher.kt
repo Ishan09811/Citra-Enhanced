@@ -2,7 +2,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-
 package io.github.mandarine3ds.mandarine.utils
 
 import android.content.Context
@@ -73,13 +72,20 @@ object DriversFetcher {
         }
     }
 
-    suspend fun downloadAsset(context: Context, assetUrl: String, destinationUri: Uri): DownloadResult {
+    suspend fun downloadAsset(
+        context: Context,
+        assetUrl: String,
+        destinationUri: Uri,
+        progressCallback: (Long, Long) -> Unit
+    ): DownloadResult {
         return try {
             withContext(Dispatchers.IO) {
                 val response: HttpResponse = httpClient.get(assetUrl)
+                val contentLength = response.headers[HttpHeaders.ContentLength]?.toLong() ?: -1L
+
                 context.contentResolver.openOutputStream(destinationUri)?.use { outputStream ->
-                    writeResponseToStream(response, outputStream)
-                } ?: return@withContext DownloadResult.Error("Failed to open ${destinationUri.toString()}")
+                    writeResponseToStream(response, outputStream, contentLength, progressCallback)
+                } ?: return@withContext DownloadResult.Error("Failed to open ${destinationUri}")
             }
             DownloadResult.Success
         } catch (e: Exception) {
@@ -88,14 +94,22 @@ object DriversFetcher {
         }
     }
 
-    private suspend fun writeResponseToStream(response: HttpResponse, outputStream: OutputStream) {
+    private suspend fun writeResponseToStream(
+        response: HttpResponse,
+        outputStream: OutputStream,
+        contentLength: Long,
+        progressCallback: (Long, Long) -> Unit
+    ) {
         val channel = response.bodyAsChannel()
         val buffer = ByteArray(8192) // 8KB buffer size
+        var totalBytesRead = 0L
 
         while (!channel.isClosedForRead) {
             val bytesRead = channel.readAvailable(buffer)
             if (bytesRead > 0) {
                 outputStream.write(buffer, 0, bytesRead)
+                totalBytesRead += bytesRead
+                progressCallback(totalBytesRead, contentLength)
             }
         }
         outputStream.flush()
