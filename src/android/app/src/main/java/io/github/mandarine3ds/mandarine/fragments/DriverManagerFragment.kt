@@ -194,9 +194,9 @@ class DriverManagerFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.Main) {
             val fetchOutput = DriversFetcher.fetchReleases(repoUrl)
 
-            if (fetchOutput.result == FetchResult.Error) {
+            if (fetchOutput.result is FetchResult.Error) {
                 showErrorDialog(fetchOutput.result.message)
-                return
+                return@launch
             }
             
             val releaseNames = fetchOutput.fetchedDrivers.map { it.first }
@@ -300,7 +300,7 @@ class DriverManagerFragment : Fragment() {
     private fun showErrorDialog(message: String) {
         MessageDialogFragment.newInstance(
             requireActivity(),
-            title = "Error"
+            title = "Error",
             description = message
         ).show(parentFragmentManager, MessageDialogFragment.TAG)
     }
