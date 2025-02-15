@@ -192,11 +192,22 @@ class DriverManagerFragment : Fragment() {
 
     private fun fetchAndShowDrivers(repoUrl: String) {
         lifecycleScope.launch(Dispatchers.Main) {
-            val fetchOutput = DriversFetcher.fetchReleases(repoUrl)
+            var fetchOutput = DriversFetcher.fetchReleases(repoUrl)
 
             if (fetchOutput.result is FetchResult.Error) {
                 showErrorDialog(fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers")
                 return@launch
+            }
+
+            if (fetchOutput.result is FetchResult.Warning) {
+                MessageDialogFragment.newInstance(
+                    requireActivity(),
+                    title = "Warning",
+                    description = fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers",
+                    positiveButtonTitle = "Continue",
+                    positiveAction = { fetchOutput = DriversFetcher.fetchReleases(repoUrl, true) },
+                    negativeButtonTitle = android.R.string.cancel
+                ).show(parentFragmentManager, MessageDialogFragment.TAG)
             }
             
             val releaseNames = fetchOutput.fetchedDrivers.map { it.first }
