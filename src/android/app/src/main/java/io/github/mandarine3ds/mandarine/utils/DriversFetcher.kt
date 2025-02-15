@@ -102,7 +102,7 @@ object DriversFetcher {
         progressCallback: (Long, Long) -> Unit
     ) {
         val channel = response.bodyAsChannel()
-        val buffer = ByteArray(8192) // 8KB buffer size
+        val buffer = ByteArray(1024) // 1KB buffer size
         var totalBytesRead = 0L
 
         while (!channel.isClosedForRead) {
