@@ -48,17 +48,13 @@ object DriversFetcher {
 
         return try {
             val response: HttpResponse = withContext(Dispatchers.IO) {
-                try {
-                    httpClient.get(apiUrl)
-                } catch (e: Exception) {
-                    return@withContext FetchResultOutput(emptyList(), FetchResult.Error("Failed to fetch drivers: ${e.message}"))
-                }
+                httpClient.get(apiUrl)
             }
 
             if (response.status.value != 200) 
                 return FetchResultOutput(emptyList(), FetchResult.Error("Failed to fetch drivers"))
 
-            val releases = response.body()
+            val releases: List<GitHubRelease> = response.body()
             
             val isValid = withContext(Dispatchers.IO) {
                 try {
