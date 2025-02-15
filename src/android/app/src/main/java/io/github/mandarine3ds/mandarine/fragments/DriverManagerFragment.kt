@@ -44,7 +44,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.IOException
 
 class DriverManagerFragment : Fragment() {
@@ -234,7 +233,7 @@ class DriverManagerFragment : Fragment() {
 
             val result = DriversFetcher.downloadAsset(requireContext(), chosenUrl, createZipFile!!.uri) { downloadedBytes, totalBytes ->
                 // when using unit it stays to of this unit origin thread that's why we need to use main thread
-                withContext(Dispatchers.Main) {
+                GlobalScope.launch(Dispatchers.Main) {
                     if (totalBytes > 0) {
                         val progress = (downloadedBytes * 100 / totalBytes).toInt()
                         progressBar?.max = 100
