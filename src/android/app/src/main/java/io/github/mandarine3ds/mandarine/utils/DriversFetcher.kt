@@ -73,7 +73,7 @@ object DriversFetcher {
         }
     }
 
-    suspend fun downloadAsset(
+    fun downloadAsset(
         context: Context,
         assetUrl: String,
         destinationUri: Uri,
@@ -95,7 +95,7 @@ object DriversFetcher {
         }
     }
 
-    private suspend fun writeResponseToStream(
+    private fun writeResponseToStream(
         response: HttpResponse,
         outputStream: OutputStream,
         contentLength: Long,
