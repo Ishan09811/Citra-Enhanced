@@ -41,7 +41,7 @@ object DriversFetcher {
     @Serializable
     data class Asset(val browser_download_url: String)
 
-    suspend fun fetchReleases(repoUrl: String): List<Pair<String, String?>> {
+    suspend fun fetchReleases(repoUrl: String): FetchResultOutput {
         val repoPath = repoUrl.removePrefix("https://github.com/")
         val validationUrl = "https://api.github.com/repos/$repoPath/contents/.adrenoDrivers"
         val apiUrl = "https://api.github.com/repos/$repoPath/releases"
@@ -56,20 +56,19 @@ object DriversFetcher {
             }
 
             if (!isValid) {
-                Log.d("DriversFetcher", "Provided driver repo url is not valid.")
-                return emptyList()
+                return FetchResultOutput(emptyList(), FetchResult.Warning("Provided driver repo url is not valid."))
             }
 
             val releases: List<GitHubRelease> = withContext(Dispatchers.IO) {
                 httpClient.get(apiUrl).body()
             }
-            releases.map { release ->
+            val drivers = releases.map { release ->
                 val assetUrl = release.assets.firstOrNull()?.browser_download_url
                 release.name to assetUrl
             }
+            FetchResultOutput(drivers, FetchResult.Success)
         } catch (e: Exception) {
-            Log.e("DriversFetcher", "Error fetching releases: ${e.message}", e)
-            emptyList()
+            FetchResultOutput(emptyList(), FetchResult.Error("Error fetching releases: ${e.message}"))
         }
     }
 
@@ -119,5 +118,17 @@ object DriversFetcher {
     sealed class DownloadResult {
         object Success : DownloadResult()
         data class Error(val message: String?) : DownloadResult()
+    }
+
+    @Serializable
+    data class FetchResultOutput(
+        val fetchedDrivers: List<Pair<String, String?>>
+        val result: FetchResult
+    )
+
+    sealed class FetchResult {
+        object Success : FetchResult()
+        data class Error(val message: String?) : FetchResult()
+        data class Warning(val message: String?) : FetchResult()
     }
 }
