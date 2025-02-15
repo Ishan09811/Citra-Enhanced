@@ -41,12 +41,23 @@ object DriversFetcher {
     @Serializable
     data class Asset(val browser_download_url: String)
 
-    suspend fun fetchReleases(repoUrl: String): FetchResultOutput {
+    suspend fun fetchReleases(repoUrl: String, bypassValidation: Boolean = false): FetchResultOutput {
         val repoPath = repoUrl.removePrefix("https://github.com/")
         val validationUrl = "https://api.github.com/repos/$repoPath/contents/.adrenoDrivers"
         val apiUrl = "https://api.github.com/repos/$repoPath/releases"
 
         return try {
+            val releases: List<GitHubRelease> = withContext(Dispatchers.IO) {
+                try {
+                    httpClient.get(apiUrl)
+                } catch (e: Exception) {
+                    return FetchResultOutput(emptyList(), FetchResult.Error("Failed to fetch drivers: ${e.message}"))
+                }
+            }
+
+            if (releases.status.value != 200) 
+                return FetchResultOutput(emptyList(), FetchResult.Error("Failed to fetch drivers"))
+            
             val isValid = withContext(Dispatchers.IO) {
                 try {
                     httpClient.get(validationUrl).status.value == 200
@@ -55,14 +66,11 @@ object DriversFetcher {
                 }
             }
 
-            if (!isValid) {
+            if (!isValid && !bypassValidation) {
                 return FetchResultOutput(emptyList(), FetchResult.Warning("Provided driver repo url is not valid."))
             }
 
-            val releases: List<GitHubRelease> = withContext(Dispatchers.IO) {
-                httpClient.get(apiUrl).body()
-            }
-            val drivers = releases.map { release ->
+            val drivers = releases.body().map { release ->
                 val assetUrl = release.assets.firstOrNull()?.browser_download_url
                 release.name to assetUrl
             }
