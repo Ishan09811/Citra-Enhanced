@@ -35,6 +35,8 @@ import io.github.mandarine3ds.mandarine.utils.DirectoryInitialization
 import io.github.mandarine3ds.mandarine.utils.DirectoryInitialization.userDirectory
 import io.github.mandarine3ds.mandarine.utils.DriversFetcher
 import io.github.mandarine3ds.mandarine.utils.DriversFetcher.DownloadResult
+import io.github.mandarine3ds.mandarine.utils.DriversFetcher.FetchResultOutput
+import io.github.mandarine3ds.mandarine.utils.DriversFetcher.FetchResult
 import io.github.mandarine3ds.mandarine.utils.FileUtil
 import io.github.mandarine3ds.mandarine.utils.FileUtil.inputStream
 import io.github.mandarine3ds.mandarine.utils.GpuDriverHelper
@@ -190,14 +192,15 @@ class DriverManagerFragment : Fragment() {
 
     private fun fetchAndShowDrivers(repoUrl: String) {
         lifecycleScope.launch(Dispatchers.Main) {
-            val releases = DriversFetcher.fetchReleases(repoUrl)
-            if (releases.isEmpty()) {
-                Snackbar.make(binding.root, "Failed to fetch ${repoUrl}: validation failed or check your internet connection", Snackbar.LENGTH_SHORT).show()
-                return@launch
-            }
+            val fetchOutput = DriversFetcher.fetchReleases(repoUrl)
 
-            val releaseNames = releases.map { it.first }
-            val releaseUrls = releases.map { it.second }
+            if (fetchOutput.result == FetchResult.Error) {
+                showErrorDialog(fetchOutput.result.message)
+                return
+            }
+            
+            val releaseNames = fetchOutput.fetchedDrivers.map { it.first }
+            val releaseUrls = fetchOutput.fetchedDrivers.map { it.second }
             var chosenUrl: String? = releaseUrls[0]
             var chosenName: String? = releaseNames[0]
 
@@ -295,12 +298,11 @@ class DriverManagerFragment : Fragment() {
     }
 
     private fun showErrorDialog(message: String) {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Error")
-            .setMessage(message)
-            .setPositiveButton(android.R.string.ok, null)
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+        MessageDialogFragment.newInstance(
+            requireActivity(),
+            title = "Error"
+            description = message
+        ).show(parentFragmentManager, MessageDialogFragment.TAG)
     }
 
     private fun setInsets() =
