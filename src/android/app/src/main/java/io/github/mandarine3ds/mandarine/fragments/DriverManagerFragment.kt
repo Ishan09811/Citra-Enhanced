@@ -195,7 +195,7 @@ class DriverManagerFragment : Fragment() {
             val fetchOutput = DriversFetcher.fetchReleases(repoUrl)
 
             if (fetchOutput.result is FetchResult.Error) {
-                showErrorDialog(fetchOutput.result.message)
+                showErrorDialog(fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers")
                 return@launch
             }
             
