@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialSharedAxis
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import io.github.mandarine3ds.mandarine.MandarineApplication
 import io.github.mandarine3ds.mandarine.R
 import io.github.mandarine3ds.mandarine.adapters.DriverAdapter
@@ -225,7 +226,21 @@ class DriverManagerFragment : Fragment() {
                 .create()
             progressDialog.show()
 
-            val result = DriversFetcher.downloadAsset(requireContext(), chosenUrl, createZipFile!!.uri)
+            val progressBar = progressDialog.findViewById<LinearProgressIndicator>(R.id.progress_bar)
+            val progressText = progressDialog.findViewById<TextView>(R.id.progress_text)
+            progressBar?.isIndeterminate = false
+
+            val result = DriversFetcher.downloadAsset(requireContext(), chosenUrl, createZipFile!!.uri) { downloadedBytes, totalBytes ->
+                if (totalBytes > 0) {
+                    val progress = (downloadedBytes * 100 / totalBytes).toInt()
+                    progressBar?.max = 100
+                    progressBar?.progress = progress
+                    progressText?.text = "$progress%"
+                } else { 
+                    progressBar?.isIndeterminate = true
+                    progressText?.visibility = View.GONE
+                }
+            }
             progressDialog.dismiss()
 
             when (result) {
