@@ -120,9 +120,8 @@ object DriversFetcher {
         data class Error(val message: String?) : DownloadResult()
     }
 
-    @Serializable
     data class FetchResultOutput(
-        val fetchedDrivers: List<Pair<String, String?>>
+        val fetchedDrivers: List<Pair<String, String?>>,
         val result: FetchResult
     )
 
