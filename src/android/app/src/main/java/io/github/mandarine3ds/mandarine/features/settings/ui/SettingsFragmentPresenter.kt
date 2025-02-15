@@ -130,6 +130,17 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
     private fun addConfigSettings(sl: ArrayList<SettingsItem>) {
         settingsActivity.setToolbarTitle(settingsActivity.getString(R.string.preferences_settings))
         sl.apply {
+            /*TODO: if (!TextUtils.isEmpty(gameId)) {
+                add(
+                    SwitchSetting(
+                        BooleanSetting.ENABLE_CUSTOM_SETTINGS,
+                        R.string.enable_custom_settings,
+                        R.string.enable_custom_settings_desc,
+                        BooleanSetting.ENABLE_CUSTOM_SETTINGS.key,
+                        BooleanSetting.ENABLE_CUSTOM_SETTINGS.defaultValue
+                    )
+                )
+            }*/
             add(
                 SubmenuSetting(
                     R.string.preferences_general,

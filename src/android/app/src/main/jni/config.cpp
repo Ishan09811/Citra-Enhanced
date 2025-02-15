@@ -23,11 +23,18 @@
 #include "jni/input_manager.h"
 #include "network/network_settings.h"
 
-Config::Config() {
-    // TODO: Don't hardcode the path; let the frontend decide where to put the config files.
-    sdl2_config_loc = FileUtil::GetUserPath(FileUtil::UserPath::ConfigDir) + "config.ini";
+Config::Config(const std::string& config_file_name) {
+    std::string config_path;
+    
+    if (config_file_name.empty()) {
+        config_path = "/config/config.ini";
+    } else {
+        config_path = "/config/" + config_file_name + ".ini";
+    }
+
     std::string ini_buffer;
-    FileUtil::ReadFileToString(true, sdl2_config_loc, ini_buffer);
+    FileUtil::ReadFileToString(true, config_path, ini_buffer);
+
     if (!ini_buffer.empty()) {
         sdl2_config = std::make_unique<INIReader>(ini_buffer.c_str(), ini_buffer.size());
     }

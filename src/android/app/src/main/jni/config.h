@@ -19,7 +19,7 @@ private:
     void ReadValues();
 
 public:
-    Config();
+    Config(const std::string& config_file_name = "");
     ~Config();
 
     void Reload();

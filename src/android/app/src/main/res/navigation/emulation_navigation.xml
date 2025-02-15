@@ -15,6 +15,10 @@
             app:argType="io.github.mandarine3ds.mandarine.model.Game"
             app:nullable="true"
             android:defaultValue="@null" />
+        <argument
+            android:name="shouldApplyCustomSettings"
+            app:argType="boolean"
+            app:defaultValue="false" />
     </fragment>
 
     <activity

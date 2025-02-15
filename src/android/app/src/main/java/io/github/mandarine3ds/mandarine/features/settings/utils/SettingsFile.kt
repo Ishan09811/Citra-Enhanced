@@ -21,6 +21,7 @@ import io.github.mandarine3ds.mandarine.features.settings.ui.SettingsActivityVie
 import io.github.mandarine3ds.mandarine.utils.BiMap
 import io.github.mandarine3ds.mandarine.utils.DirectoryInitialization.userDirectory
 import io.github.mandarine3ds.mandarine.utils.Log
+import io.github.mandarine3ds.mandarine.NativeLibrary
 import org.ini4j.Wini
 import java.io.BufferedReader
 import java.io.FileNotFoundException
@@ -119,32 +120,40 @@ object SettingsFile {
      */
     fun saveFile(
         fileName: String,
-        sections: TreeMap<String, SettingSection?>,
-        view: SettingsActivityView
+        sections: TreeMap<String, SettingSection?>, // Accepts nullable sections
+        view: SettingsActivityView? = null
     ) {
         val ini = getSettingsFile(fileName)
         try {
             val context: Context = MandarineApplication.appContext
             val inputStream = context.contentResolver.openInputStream(ini.uri)
             val writer = Wini(inputStream)
-            val keySet: Set<String> = sections.keys
-            for (key in keySet) {
-                val section = sections[key]
-                writeSection(writer, section!!)
+
+            for ((key, section) in sections) {
+                if (section != null && section.settings.isNotEmpty()) { // Ensure section is valid
+                    writeSection(writer, section)
+                }
             }
-            inputStream!!.close()
+
+            inputStream?.close()
+
             val outputStream = context.contentResolver.openOutputStream(ini.uri, "wt")
-            writer.store(outputStream)
-            outputStream!!.flush()
-            outputStream.close()
+            if (writer.isEmpty) {
+                Log.warning("[SettingsFile] Skipping writing empty file: $fileName.ini")
+            } else {
+                writer.store(outputStream)
+                outputStream?.flush()
+            }
+            outputStream?.close()
         } catch (e: Exception) {
             Log.error("[SettingsFile] File not found: $fileName.ini: ${e.message}")
-            view.showToastMessage(
+            view?.showToastMessage(
                 MandarineApplication.appContext
                     .getString(R.string.error_saving, fileName, e.message), false
             )
         }
     }
+
 
     fun saveFile(
         fileName: String,
@@ -163,6 +172,44 @@ object SettingsFile {
             outputStream.close()
         } catch (e: Exception) {
             Log.error("[SettingsFile] File not found: $fileName.ini: ${e.message}")
+        }
+    }
+
+    /**
+     * Saves custom game settings to a given .ini file on disk. If unsuccessful, outputs an error.
+     *
+     * @param gameId   The ID of the game to save its settings.
+     * @param sections The HashMap containing the Settings we want to serialize.
+     * @param view     The current view.
+     */
+    fun saveCustomGameSettings(
+        gameId: String,
+        sections: HashMap<String, SettingSection?>,
+        view: SettingsActivityView
+    ) {
+        val ini = getCustomGameSettingsFile(gameId)
+        try {
+            val context: Context = MandarineApplication.appContext
+            val inputStream = context.contentResolver.openInputStream(ini.uri)
+            val writer = Wini(inputStream)
+        
+            for ((key, section) in sections) {
+                if (section != null) {
+                    writeSection(writer, section)
+                }
+            }
+
+            inputStream?.close()
+            val outputStream = context.contentResolver.openOutputStream(ini.uri, "wt")
+            writer.store(outputStream)
+            outputStream?.flush()
+            outputStream?.close()
+        } catch (e: Exception) {
+            Log.error("[SettingsFile] Error saving custom game settings for: $gameId.ini: ${e.message}")
+            view.showToastMessage(
+                MandarineApplication.appContext
+                    .getString(R.string.error_saving, gameId, e.message), false
+            )
         }
     }
 
@@ -185,13 +232,24 @@ object SettingsFile {
     fun getSettingsFile(fileName: String): DocumentFile {
         val root = DocumentFile.fromTreeUri(MandarineApplication.appContext, Uri.parse(userDirectory))
         val configDirectory = root!!.findFile("config")
-        return configDirectory!!.findFile("$fileName.ini")!!
+        val configFile = configDirectory!!.findFile("$fileName.ini") ?: configDirectory!!.createFile("application/octet-stream", "$fileName.ini")
+        NativeLibrary.initialiseConfigFile()
+        return configFile!!
+    }
+
+    fun isSettingsFileExists(): Boolean {
+        val root = DocumentFile.fromTreeUri(MandarineApplication.appContext, Uri.parse(userDirectory))
+        val configDirectory = root!!.findFile("config")
+        val configFile = configDirectory!!.findFile("config.ini") // global settings are hardcoded with "config" name so passing fileName is unnecessary
+        return configFile != null
     }
 
     private fun getCustomGameSettingsFile(gameId: String): DocumentFile {
         val root = DocumentFile.fromTreeUri(MandarineApplication.appContext, Uri.parse(userDirectory))
-        val configDirectory = root!!.findFile("GameSettings")
-        return configDirectory!!.findFile("$gameId.ini")!!
+        val configDirectory = root!!.findFile("config")
+        var configFile = configDirectory!!.findFile("$gameId.ini") ?: configDirectory!!.createFile("application/octet-stream", "$gameId.ini")
+        NativeLibrary.initialisePerGameConfigFile(gameId)
+        return configFile!!
     }
 
     private fun sectionFromLine(line: String, isCustomGame: Boolean): SettingSection {

@@ -151,9 +151,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
             return
         }
 
+        if (args.shouldApplyCustomSettings)
+            Toast.makeText(requireContext(), "Custom settings applied", Toast.LENGTH_SHORT).show()
+
         // So this fragment doesn't restart on configuration changes; i.e. rotation.
         retainInstance = true
-        emulationState = EmulationState(game.path)
+        emulationState = EmulationState(game.path, args.shouldApplyCustomSettings, game.titleId)
         emulationActivity = requireActivity() as EmulationActivity
         screenAdjustmentUtil = ScreenAdjustmentUtil(
             requireContext(),
@@ -346,8 +349,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                     SettingsActivity.launch(
                         requireContext(),
                         SettingsFile.FILE_NAME_CONFIG,
-                        ""
-                    )
+                        if (args.shouldApplyCustomSettings) String.format("%016X", game.titleId) else ""
+                    )           
                     true
                 }
 
@@ -1331,7 +1334,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
         }
     }
 
-    private class EmulationState(private val gamePath: String) {
+    private class EmulationState(private val gamePath: String, private val shouldApplyCustomSettings: Boolean, private val titleId: Long) {
         private var state: State
         private var surface: Surface? = null
 
@@ -1446,7 +1449,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                 State.STOPPED -> {
                     Thread({
                         Log.debug("[EmulationFragment] Starting emulation thread.")
-                        NativeLibrary.run(gamePath)
+                        NativeLibrary.run(gamePath, shouldApplyCustomSettings, String.format("%016X", titleId))
                     }, "NativeEmulation").start()
                 }
 

@@ -121,7 +121,7 @@ class GameAdapter(
             )
             .apply()
 
-        val action = HomeNavigationDirections.actionGlobalEmulationActivity(holder.game)
+        val action = HomeNavigationDirections.actionGlobalEmulationActivity(game = holder.game, shouldApplyCustomSettings = false)
         view.findNavController().navigate(action)
     }
 

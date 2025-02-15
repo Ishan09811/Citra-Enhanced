@@ -205,7 +205,7 @@ class SystemFilesFragment : Fragment() {
                 path = menuPath,
                 filename = ""
             )
-            val action = HomeNavigationDirections.actionGlobalEmulationActivity(menu)
+            val action = HomeNavigationDirections.actionGlobalEmulationActivity(game = menu, shouldApplyCustomSettings = false)
             binding.root.findNavController().navigate(action)
         }
     }

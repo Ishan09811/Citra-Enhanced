@@ -18,6 +18,7 @@ import io.github.mandarine3ds.mandarine.databinding.CardDriverOptionBinding
 import io.github.mandarine3ds.mandarine.utils.GpuDriverMetadata
 import io.github.mandarine3ds.mandarine.viewmodel.DriverViewModel
 import io.github.mandarine3ds.mandarine.utils.GpuDriverHelper
+import io.github.mandarine3ds.mandarine.MandarineApplication
 
 class DriverAdapter(private val driverViewModel: DriverViewModel) :
     ListAdapter<Pair<Uri, GpuDriverMetadata>, DriverAdapter.DriverViewHolder>(
@@ -44,12 +45,13 @@ class DriverAdapter(private val driverViewModel: DriverViewModel) :
         if (driverViewModel.selectedDriver > position) {
             driverViewModel.setSelectedDriverIndex(driverViewModel.selectedDriver - 1)
         }
-        if (GpuDriverHelper.customDriverData == driverData.second) {
-            driverViewModel.setSelectedDriverIndex(0)
-        }
         driverViewModel.driversToDelete.add(driverData.first)
         driverViewModel.removeDriver(driverData)
         notifyItemRemoved(position)
+        if (getItemCount() == 0) {
+            driverViewModel.setSelectedDriverIndex(0)
+        }
+        notifyItemChanged(driverViewModel.previouslySelectedDriver)
         notifyItemChanged(driverViewModel.selectedDriver)
     }
 
@@ -82,21 +84,15 @@ class DriverAdapter(private val driverViewModel: DriverViewModel) :
                     },
                     3000
                 )
-                if (driver.name == null) {
-                    title.setText(R.string.system_gpu_driver)
-                    description.text = ""
-                    version.text = ""
-                    version.visibility = View.GONE
-                    description.visibility = View.GONE
+                title.text = driver.name
+                version.text = driver.version
+                description.text = driver.description
+                version.visibility = View.VISIBLE
+                description.visibility = View.VISIBLE
+                if (driver.name == MandarineApplication.appContext.getString(R.string.system_gpu_driver))
                     buttonDelete.visibility = View.GONE
-                } else {
-                    title.text = driver.name
-                    version.text = driver.version
-                    description.text = driver.description
-                    version.visibility = View.VISIBLE
-                    description.visibility = View.VISIBLE
+                else 
                     buttonDelete.visibility = View.VISIBLE
-                }
             }
         }
     }

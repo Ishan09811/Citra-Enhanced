@@ -46,6 +46,8 @@ import io.github.mandarine3ds.mandarine.adapters.GameAboutAdapter
 import io.github.mandarine3ds.mandarine.databinding.FragmentGameAboutBinding
 import io.github.mandarine3ds.mandarine.databinding.DialogShortcutBinding
 import io.github.mandarine3ds.mandarine.features.settings.model.Settings
+import io.github.mandarine3ds.mandarine.features.settings.ui.SettingsActivity
+import io.github.mandarine3ds.mandarine.features.settings.utils.SettingsFile
 import io.github.mandarine3ds.mandarine.model.Game
 import io.github.mandarine3ds.mandarine.model.GameAbout
 import io.github.mandarine3ds.mandarine.viewmodel.GamesViewModel
@@ -182,9 +184,32 @@ class GameAboutFragment : Fragment() {
         GameIconUtils.loadGameIcon(requireActivity(), args.game, binding.imageGameScreen, false)
 
         binding.buttonStart.setOnClickListener {
-            val action = HomeNavigationDirections.actionGlobalEmulationActivity(args.game)
-            view.findNavController().navigate(action)
+	    val items = arrayOf("Global", "Custom")
+            var checkedItem = 0
+            var selectedItem: String? = items[0]
+
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Launch Config")
+                .setSingleChoiceItems(items, checkedItem) { dialog, which ->
+                    selectedItem = items[which]
+                }
+                .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                    if (selectedItem == "Global") {
+                        val action = HomeNavigationDirections.actionGlobalEmulationActivity(game = args.game, shouldApplyCustomSettings = false)
+                        view.findNavController().navigate(action)
+                    } else {
+                        val action = HomeNavigationDirections.actionGlobalEmulationActivity(game = args.game, shouldApplyCustomSettings = true)
+                        view.findNavController().navigate(action)
+                    }
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
         }
+
+	homeViewModel.reloadGameAboutList.collect(
+            viewLifecycleOwner,
+            resetState = { homeViewModel.reloadGameAboutList(false) }
+        ) { if (it) reloadList() }
 
         reloadList()
         setInsets()
@@ -230,6 +255,15 @@ class GameAboutFragment : Fragment() {
                     binding.root.findNavController().navigate(action)
                 }
             )
+	    add(
+                SubmenuGameAbout(
+                    R.string.settings,
+                    R.string.per_game_settings_description,
+                    R.drawable.ic_settings
+                ) {
+                    SettingsActivity.launch(requireContext(), SettingsFile.FILE_NAME_CONFIG, String.format("%016X", args.game.titleId))
+                }
+            )
             add(
                 SubmenuGameAbout(
                     R.string.add_ons,
@@ -253,12 +287,67 @@ class GameAboutFragment : Fragment() {
 			positiveButtonTitle = R.string.misc_import,
 			negativeButtonTitle = R.string.export,
 			neutralButtonTitle = android.R.string.cancel,
-                        positiveAction = { SaveManagementUtils.importSave(documentPicker) },
+                        positiveAction = { 
+			    SaveManagementUtils.importSave(documentPicker) 
+			    homeViewModel.reloadGameAboutList(true)
+			},
 			negativeAction = { SaveManagementUtils.exportSave(startForResultExportSave, String.format("%016X", args.game.titleId), "${args.game.title} (v1.0) [${String.format("%016X", args.game.titleId)}]") },
 			neutralAction = { null }
                     ).show(parentFragmentManager, MessageDialogFragment.TAG)
                 }
             )
+	    if (SaveManagementUtils.saveFolderGameExists(String.format("%016X", args.game.titleId))) {
+                add(
+                    SubmenuGameAbout(
+                        R.string.delete_save_data,
+                        R.string.delete_save_data_description,
+                        R.drawable.ic_delete,
+                        action = {
+                            MessageDialogFragment.newInstance(
+                                requireActivity(),
+                                title = R.string.delete_save_data,
+                                description = R.string.irreversible_action,
+                                positiveButtonTitle = android.R.string.cancel,
+                                negativeButtonTitle = android.R.string.ok,
+                                negativeAction = {
+                                    SaveManagementUtils.deleteSaveFile(String.format("%016X", args.game.titleId))
+                                    Toast.makeText(
+                                        MandarineApplication.appContext,
+                                        R.string.save_data_deleted_successfully,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+				    homeViewModel.reloadGameAboutList(true)
+                                }
+                            ).show(parentFragmentManager, MessageDialogFragment.TAG)
+                        }
+                    )
+                )
+            }
+	    if (FileUtil.isShaderCacheExists(String.format("%016X", args.game.titleId))) {
+                add(
+                    SubmenuGameAbout(
+                        R.string.clear_shader_cache,
+                        R.string.clear_shader_cache_description,
+                        R.drawable.ic_delete,
+                        action = {
+                            MessageDialogFragment.newInstance(
+                                requireActivity(),
+                                title = R.string.clear_shader_cache,
+                                description = R.string.irreversible_action,
+                                positiveAction = {
+                                    FileUtil.deleteShaderCache(String.format("%016X", args.game.titleId))
+                                    Toast.makeText(
+                                        MandarineApplication.appContext,
+                                        R.string.cleared_shaders_cache_successfully,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    homeViewModel.reloadGameAboutList(true)
+                                }
+                            ).show(parentFragmentManager, MessageDialogFragment.TAG)
+                        }
+                    )
+		)
+            }
         }
         binding.listProperties.apply {
             layoutManager =
@@ -326,6 +415,7 @@ class GameAboutFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+	homeViewModel.reloadGameAboutList(true)
     }
 
     private fun setInsets() =

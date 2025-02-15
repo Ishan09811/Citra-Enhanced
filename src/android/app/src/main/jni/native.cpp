@@ -6,6 +6,9 @@
 #include <codecvt>
 #include <thread>
 #include <dlfcn.h>
+#include <string>
+#include <vector>
+#include <cstdio>
 
 #include <android/api-level.h>
 #include <android/native_window_jni.h>
@@ -57,6 +60,7 @@
 #include "video_core/debug_utils/debug_utils.h"
 #include "video_core/gpu.h"
 #include "video_core/renderer_base.h"
+#include <vulkan/vulkan.h>
 
 #if defined(ENABLE_VULKAN) && MANDARINE_ARCH(arm64)
 #include <adrenotools/driver.h>
@@ -129,7 +133,7 @@ static bool CheckMicPermission() {
                                                                IDCache::GetRequestMicPermission());
 }
 
-static Core::System::ResultStatus RunMandarine(const std::string& filepath) {
+static Core::System::ResultStatus RunMandarine(const std::string& filepath, bool shouldApplyCustomSettings, std::string config_name) {
     // Mandarine core only supports a single running instance
     std::scoped_lock lock(running_mutex);
 
@@ -169,12 +173,15 @@ static Core::System::ResultStatus RunMandarine(const std::string& filepath) {
         break;
     }
 
-    // Forces a config reload on game boot, if the user changed settings in the UI
-    Config{};
     FileUtil::SetCurrentRomPath(filepath);
     auto app_loader = Loader::GetLoader(filepath);
     if (app_loader) {
         system.RegisterAppLoaderEarly(app_loader);
+    }
+    if (shouldApplyCustomSettings) {
+        Config{config_name};
+    } else {
+        Config{};
     }
     system.ApplySettings();
     Settings::LogSettings();
@@ -285,6 +292,76 @@ void InitializeGpuDriver(const std::string& hook_lib_dir, const std::string& cus
 
     vulkan_library = std::make_shared<Common::DynamicLibrary>(handle);
 #endif
+}
+
+extern "C" JNIEXPORT jobjectArray JNICALL
+Java_io_github_mandarine3ds_mandarine_utils_GpuDriverHelper_getSystemDriverInfo(JNIEnv *env, jobject) {
+    void* libvulkanHandle = dlopen("libvulkan.so", RTLD_NOW);
+    if (!libvulkanHandle) {
+        return nullptr;
+    }
+
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+        reinterpret_cast<PFN_vkGetInstanceProcAddr>(dlsym(libvulkanHandle, "vkGetInstanceProcAddr"));
+    if (!vkGetInstanceProcAddr) {
+        dlclose(libvulkanHandle);
+        return nullptr;
+    }
+    
+    PFN_vkCreateInstance vkCreateInstance =
+        reinterpret_cast<PFN_vkCreateInstance>(vkGetInstanceProcAddr(nullptr, "vkCreateInstance"));
+    
+    VkInstance instance;
+    VkInstanceCreateInfo instanceCreateInfo{};
+    instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+
+    if (vkCreateInstance(&instanceCreateInfo, nullptr, &instance) != VK_SUCCESS) {
+        dlclose(libvulkanHandle);
+        return nullptr;
+    }
+
+    PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices =
+        reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(vkGetInstanceProcAddr(instance, "vkEnumeratePhysicalDevices"));
+
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+    if (deviceCount == 0) {
+        return nullptr;
+    }
+
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+    VkPhysicalDevice physicalDevice = devices[0]; // Pick the first device
+
+    PFN_vkGetPhysicalDeviceProperties2 vkGetPhysicalDeviceProperties2 =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceProperties2"));
+
+    VkPhysicalDeviceProperties2 deviceProperties2{};
+    deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+
+    VkPhysicalDeviceDriverProperties driverProperties{};
+    driverProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
+    deviceProperties2.pNext = &driverProperties;
+
+    vkGetPhysicalDeviceProperties2(physicalDevice, &deviceProperties2);
+    
+    char driverVersion[32];
+    snprintf(driverVersion, sizeof(driverVersion), "%d.%d.%d",
+             VK_API_VERSION_MAJOR(deviceProperties2.properties.driverVersion),
+             VK_API_VERSION_MINOR(deviceProperties2.properties.driverVersion),
+             VK_API_VERSION_PATCH(deviceProperties2.properties.driverVersion));
+
+    jobjectArray array = env->NewObjectArray(2, env->FindClass("java/lang/String"), nullptr);
+    env->SetObjectArrayElement(array, 0, env->NewStringUTF(driverProperties.driverName));
+    env->SetObjectArrayElement(array, 1, env->NewStringUTF(driverVersion));
+    
+    PFN_vkDestroyInstance vkDestroyInstance =
+        reinterpret_cast<PFN_vkDestroyInstance>(vkGetInstanceProcAddr(instance, "vkDestroyInstance"));
+    vkDestroyInstance(instance, nullptr);
+    dlclose(libvulkanHandle);
+
+    return array;
 }
 
 extern "C" {
@@ -574,9 +651,14 @@ jboolean Java_io_github_mandarine3ds_mandarine_NativeLibrary_getIsSystemTitle(
     return ((program_id >> 32) & 0xFFFFFFFF) == 0x00040010;
 }
 
-void Java_io_github_mandarine3ds_mandarine_NativeLibrary_createConfigFile(
+void Java_io_github_mandarine3ds_mandarine_NativeLibrary_initialiseConfigFile(
     [[maybe_unused]] JNIEnv* env, [[maybe_unused]] jobject obj) {
     Config{};
+}
+
+void Java_io_github_mandarine3ds_mandarine_NativeLibrary_initialisePerGameConfigFile(
+    [[maybe_unused]] JNIEnv* env, [[maybe_unused]] jobject obj, jstring config_name) {
+    Config{GetJString(env, config_name)};
 }
 
 void Java_io_github_mandarine3ds_mandarine_NativeLibrary_createLogFile(
@@ -600,6 +682,13 @@ void Java_io_github_mandarine3ds_mandarine_NativeLibrary_reloadSettings(
     system.ApplySettings();
 }
 
+void Java_io_github_mandarine3ds_mandarine_NativeLibrary_reloadPerGameSettings(
+    [[maybe_unused]] JNIEnv* env, [[maybe_unused]] jobject obj, jstring config_name) {
+    Config{GetJString(env, config_name)};
+    Core::System& system{Core::System::GetInstance()};
+    system.ApplySettings();
+}
+
 jdoubleArray Java_io_github_mandarine3ds_mandarine_NativeLibrary_getPerfStats(
     JNIEnv* env, [[maybe_unused]] jobject obj) {
     auto& core = Core::System::GetInstance();
@@ -618,8 +707,8 @@ jdoubleArray Java_io_github_mandarine3ds_mandarine_NativeLibrary_getPerfStats(
     return j_stats;
 }
 
-void Java_io_github_mandarine3ds_mandarine_NativeLibrary_run__Ljava_lang_String_2(
-    JNIEnv* env, [[maybe_unused]] jobject obj, jstring j_path) {
+void Java_io_github_mandarine3ds_mandarine_NativeLibrary_run(
+    JNIEnv* env, [[maybe_unused]] jobject obj, jstring j_path, jboolean should_apply_custom_settings, jstring config_name) {
     const std::string path = GetJString(env, j_path);
 
     if (!stop_run) {
@@ -627,7 +716,7 @@ void Java_io_github_mandarine3ds_mandarine_NativeLibrary_run__Ljava_lang_String_
         running_cv.notify_all();
     }
 
-    const Core::System::ResultStatus result{RunMandarine(path)};
+    const Core::System::ResultStatus result{RunMandarine(path, static_cast<bool>(should_apply_custom_settings), GetJString(env, config_name))};
     if (result != Core::System::ResultStatus::Success) {
         env->CallStaticVoidMethod(IDCache::GetNativeLibraryClass(),
                                   IDCache::GetExitEmulationActivity(), static_cast<int>(result));

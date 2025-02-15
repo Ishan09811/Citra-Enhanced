@@ -9,6 +9,10 @@ import io.github.mandarine3ds.mandarine.MandarineApplication
 import io.github.mandarine3ds.mandarine.R
 import io.github.mandarine3ds.mandarine.features.settings.ui.SettingsActivityView
 import io.github.mandarine3ds.mandarine.features.settings.utils.SettingsFile
+import io.github.mandarine3ds.mandarine.features.settings.model.BooleanSetting
+import io.github.mandarine3ds.mandarine.features.settings.model.FloatSetting
+import io.github.mandarine3ds.mandarine.features.settings.model.IntSetting
+import io.github.mandarine3ds.mandarine.features.settings.model.ScaledFloatSetting
 import java.util.TreeMap
 
 class Settings {
@@ -40,12 +44,20 @@ class Settings {
     val isEmpty: Boolean
         get() = sections.isEmpty()
 
-    fun loadSettings(view: SettingsActivityView? = null) {
+    private fun clearMemorySettings() {
+        BooleanSetting.clear()
+        FloatSetting.clear()
+        ScaledFloatSetting.clear()
+        IntSetting.clear()
+        StringSetting.clear()
+    }
+
+    fun loadSettings(view: SettingsActivityView? = null, titleId: String = "") {
+        clearMemorySettings()
         sections = SettingsSectionMap()
         loadMandarineSettings(view)
-        if (!TextUtils.isEmpty(gameId)) {
-            loadCustomGameSettings(gameId!!, view)
-        }
+        if (!TextUtils.isEmpty(gameId)) loadCustomGameSettings(gameId!!, view)
+        if (!TextUtils.isEmpty(titleId)) loadCustomGameSettings(titleId!!, view)
         isLoaded = true
     }
 
@@ -55,7 +67,7 @@ class Settings {
         }
     }
 
-    private fun loadCustomGameSettings(gameId: String, view: SettingsActivityView?) {
+    fun loadCustomGameSettings(gameId: String, view: SettingsActivityView?) {
         // Custom game settings
         mergeSections(SettingsFile.readCustomGameSettings(gameId, view))
     }
@@ -64,7 +76,19 @@ class Settings {
         for ((key, updatedSection) in updatedSections) {
             if (sections.containsKey(key)) {
                 val originalSection = sections[key]
-                originalSection!!.mergeSection(updatedSection!!)
+            
+                if (originalSection != null && updatedSection != null) {
+                    for ((settingKey, settingValue) in updatedSection.settings) {
+                        if (originalSection.settings.containsKey(settingKey)) {
+                            val globalValue = originalSection.settings[settingKey]
+                            if (globalValue != settingValue) {
+                                originalSection.settings[settingKey] = settingValue
+                            }
+                        } else {
+                            originalSection.settings[settingKey] = settingValue
+                        }
+                    }
+                }
             } else {
                 sections[key] = updatedSection
             }
@@ -73,6 +97,7 @@ class Settings {
 
     fun loadSettings(gameId: String, view: SettingsActivityView) {
         this.gameId = gameId
+        clearMemorySettings()
         loadSettings(view)
     }
 
@@ -87,10 +112,16 @@ class Settings {
                 for (section in sectionNames) {
                     iniSections[section] = sections[section]
                 }
-                SettingsFile.saveFile(fileName, iniSections, view)
+                SettingsFile.saveFile(fileName, iniSections, view!!)
             }
         } else {
-            // TODO: Implement per game settings
+            val gameSections = HashMap<String, SettingSection?>()
+            for ((key, section) in sections) {
+                if (section != null) {
+                    gameSections[key] = section
+                }
+            }
+            SettingsFile.saveCustomGameSettings(gameId!!, gameSections, view)
         }
     }
 

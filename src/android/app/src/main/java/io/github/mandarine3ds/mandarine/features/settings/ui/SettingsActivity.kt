@@ -125,6 +125,11 @@ class SettingsActivity : AppCompatActivity(), SettingsActivityView {
         presenter.onStop(isFinishing)
     }
 
+    override fun onResume() {
+        super.onResume()
+        presenter.reloadSettings()
+    }
+
     override fun showSettingsFragment(menuTag: String, addToStack: Boolean, gameId: String) {
         if (!addToStack && settingsFragment != null) {
             return
@@ -214,7 +219,7 @@ class SettingsActivity : AppCompatActivity(), SettingsActivityView {
         // will fail when creating the file.
         if (DirectoryInitialization.setMandarineUserDirectory()) {
             MandarineApplication.documentsTree.setRoot(Uri.parse(DirectoryInitialization.userPath))
-            NativeLibrary.createConfigFile()
+            NativeLibrary.initialiseConfigFile()
         } else {
             throw IllegalStateException("Mandarine directory unavailable when accessing config file!")
         }

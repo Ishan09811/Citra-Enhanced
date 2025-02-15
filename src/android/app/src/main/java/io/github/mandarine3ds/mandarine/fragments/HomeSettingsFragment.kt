@@ -110,7 +110,7 @@ class HomeSettingsFragment : Fragment() {
                                         filename = ""
                                     )
                                     val action =
-                                        HomeNavigationDirections.actionGlobalEmulationActivity(menu)
+                                        HomeNavigationDirections.actionGlobalEmulationActivity(game = menu, shouldApplyCustomSettings = false)
                                     binding.root.findNavController().navigate(action)
                                 }
                             }

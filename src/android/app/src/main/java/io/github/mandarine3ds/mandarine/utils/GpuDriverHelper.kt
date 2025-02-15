@@ -11,6 +11,7 @@ import io.github.mandarine3ds.mandarine.MandarineApplication
 import io.github.mandarine3ds.mandarine.NativeLibrary
 import io.github.mandarine3ds.mandarine.utils.FileUtil.asDocumentFile
 import io.github.mandarine3ds.mandarine.utils.FileUtil.inputStream
+import io.github.mandarine3ds.mandarine.R
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.IOException
@@ -80,8 +81,17 @@ object GpuDriverHelper {
                 .distinct()
                 .toMutableList()
 
-        // TODO: Get system driver information
-        drivers.add(0, Pair(Uri.EMPTY, GpuDriverMetadata()))
+        val systemDriverInfo = getSystemDriverInfo()
+        val systemMetadata = GpuDriverMetadata(
+                name = MandarineApplication.appContext.getString(R.string.system_gpu_driver),
+                author = "",
+                vendor = systemDriverInfo?.get(0) ?: "",
+                version = systemDriverInfo?.get(1) ?: "",
+                minApi = 0,
+                description = MandarineApplication.appContext.getString(R.string.system_gpu_driver_desc),
+                libraryName = ""
+            )
+        drivers.add(0, Pair(Uri.EMPTY, systemMetadata))
         return drivers
     }
 
@@ -213,6 +223,7 @@ object GpuDriverHelper {
     }
 
     external fun supportsCustomDriverLoading(): Boolean
+    external fun getSystemDriverInfo(): Array<String>?
 
     // Parse the custom driver metadata to retrieve the name.
     val customDriverData: GpuDriverMetadata

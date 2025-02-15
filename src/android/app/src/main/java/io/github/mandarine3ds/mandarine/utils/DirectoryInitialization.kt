@@ -37,7 +37,6 @@ object DirectoryInitialization {
                     MandarineApplication.documentsTree.setRoot(Uri.parse(userPath))
                     NativeLibrary.createLogFile()
                     NativeLibrary.logUserDirectory(userPath.toString())
-                    NativeLibrary.createConfigFile()
                     GpuDriverHelper.initializeDriverParameters()
                     DirectoryInitializationState.MANDARINE_DIRECTORIES_INITIALIZED
                 } else {

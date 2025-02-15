@@ -103,6 +103,8 @@ object NativeLibrary {
 
     external fun reloadSettings()
 
+    external fun reloadPerGameSettings(configName: String)
+
     external fun getTitleId(filename: String): Long
 
     external fun getIsSystemTitle(path: String): Boolean
@@ -115,14 +117,15 @@ object NativeLibrary {
     external fun getInstalledGamePaths(): Array<String?>
 
     // Create the config.ini file.
-    external fun createConfigFile()
+    external fun initialiseConfigFile()
+    external fun initialisePerGameConfigFile(configName: String)
     external fun createLogFile()
     external fun logUserDirectory(directory: String)
 
     /**
      * Begins emulation.
      */
-    external fun run(path: String)
+    external fun run(path: String, shouldApplyCustomSettings: Boolean = false, configName: String)
 
     // Surface Handling
     external fun surfaceChanged(surf: Surface)

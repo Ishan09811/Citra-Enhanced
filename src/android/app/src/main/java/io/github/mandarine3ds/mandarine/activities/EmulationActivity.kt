@@ -44,6 +44,7 @@ import io.github.mandarine3ds.mandarine.utils.ForegroundService
 import io.github.mandarine3ds.mandarine.utils.EmulationLifecycleUtil
 import io.github.mandarine3ds.mandarine.utils.EmulationMenuSettings
 import io.github.mandarine3ds.mandarine.utils.ThemeUtil
+import io.github.mandarine3ds.mandarine.model.Game
 import io.github.mandarine3ds.mandarine.viewmodel.EmulationViewModel
 import io.github.mandarine3ds.mandarine.utils.NetPlayManager
 import io.github.mandarine3ds.mandarine.dialogs.NetPlayDialog
@@ -77,8 +78,12 @@ class EmulationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeUtil.setTheme(this)
 
-        settingsViewModel.settings.loadSettings()
-
+        val game = intent.getParcelableExtra<Game>("game")
+        if (game != null && intent.extras?.getBoolean("shouldApplyCustomSettings", false) == true) {
+            settingsViewModel.settings.loadSettings(titleId = String.format("%016X", game.titleId))
+        } else {
+            settingsViewModel.settings.loadSettings()
+        }
         super.onCreate(savedInstanceState)
 
         NativeLibrary.enableAdrenoTurboMode(BooleanSetting.ADRENO_GPU_BOOST.boolean)

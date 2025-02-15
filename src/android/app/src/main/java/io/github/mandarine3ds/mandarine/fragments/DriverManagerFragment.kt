@@ -10,7 +10,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -24,6 +26,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialSharedAxis
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import io.github.mandarine3ds.mandarine.MandarineApplication
 import io.github.mandarine3ds.mandarine.R
 import io.github.mandarine3ds.mandarine.adapters.DriverAdapter
@@ -33,6 +36,8 @@ import io.github.mandarine3ds.mandarine.utils.DirectoryInitialization
 import io.github.mandarine3ds.mandarine.utils.DirectoryInitialization.userDirectory
 import io.github.mandarine3ds.mandarine.utils.DriversFetcher
 import io.github.mandarine3ds.mandarine.utils.DriversFetcher.DownloadResult
+import io.github.mandarine3ds.mandarine.utils.DriversFetcher.FetchResultOutput
+import io.github.mandarine3ds.mandarine.utils.DriversFetcher.FetchResult
 import io.github.mandarine3ds.mandarine.utils.FileUtil
 import io.github.mandarine3ds.mandarine.utils.FileUtil.inputStream
 import io.github.mandarine3ds.mandarine.utils.GpuDriverHelper
@@ -42,6 +47,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.delay
+import kotlin.coroutines.resume
 import java.io.IOException
 
 class DriverManagerFragment : Fragment() {
@@ -91,7 +99,7 @@ class DriverManagerFragment : Fragment() {
             )
         }
 
-        if (!GpuDriverHelper.supportsCustomDriverLoading()) {
+        /*if (!GpuDriverHelper.supportsCustomDriverLoading()) {
             binding.buttonInstall.visibility = View.GONE
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Unsupported")
@@ -100,7 +108,7 @@ class DriverManagerFragment : Fragment() {
                     driverViewModel.setSelectedDriverIndex(0)
                 }
                 .show()
-        }
+        }*/
 
         binding.toolbarDrivers.setNavigationOnClickListener {
             binding.root.findNavController().popBackStack()
@@ -133,6 +141,14 @@ class DriverManagerFragment : Fragment() {
                 resources.getInteger(R.integer.game_grid_columns)
             )
             adapter = DriverAdapter(driverViewModel)
+        }
+
+        if (binding.listDrivers.adapter?.getItemCount() == 0) {
+            driverViewModel.setSelectedDriverIndex(0)
+            (binding.listDrivers.adapter as DriverAdapter).apply { 
+                notifyItemChanged(driverViewModel.previouslySelectedDriver)
+                notifyItemChanged(driverViewModel.selectedDriver)
+            }
         }
 
         viewLifecycleOwner.lifecycleScope.apply {
@@ -187,14 +203,68 @@ class DriverManagerFragment : Fragment() {
 
     private fun fetchAndShowDrivers(repoUrl: String) {
         lifecycleScope.launch(Dispatchers.Main) {
-            val releases = DriversFetcher.fetchReleases(repoUrl)
-            if (releases.isEmpty()) {
-                Snackbar.make(binding.root, "Failed to fetch ${repoUrl}: validation failed or check your internet connection", Snackbar.LENGTH_SHORT).show()
+            val progressDialog =  MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Fetching")
+                .setView(R.layout.dialog_progress_bar)
+                .setCancelable(false)
+                .create()
+            progressDialog.show()
+            val progressBar = progressDialog.findViewById<LinearProgressIndicator>(R.id.progress_bar)
+            val progressText = progressDialog.findViewById<TextView>(R.id.progress_text)
+            progressText?.visibility = View.GONE  
+            progressBar?.isIndeterminate = true
+            
+            var fetchOutput = DriversFetcher.fetchReleases(repoUrl) { downloadedBytes, totalBytes ->
+                // when using unit it stays to of this unit origin thread that's why we need to use main thread
+                GlobalScope.launch(Dispatchers.Main) {
+                    if (totalBytes > 0) {
+                        if (progressBar?.isIndeterminate ?: false) progressBar?.isIndeterminate = false
+                        if (progressText?.visibility == View.GONE) progressText?.visibility = View.VISIBLE
+                        val progress = (downloadedBytes * 100 / totalBytes).toInt()
+                        progressBar?.max = 100
+                        progressBar?.progress = progress
+                        progressText?.text = "$progress%"
+                    } else { 
+                        if (progressText?.visibility == View.VISIBLE) progressText?.visibility = View.GONE  
+                        if (!(progressBar?.isIndeterminate ?: false)) progressBar?.isIndeterminate = true
+                    }
+                }
+            }
+            progressDialog.dismiss()
+            
+            if (fetchOutput.result is FetchResult.Error) {
+                showErrorDialog(fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers")
                 return@launch
             }
 
-            val releaseNames = releases.map { it.first }
-            val releaseUrls = releases.map { it.second }
+            if (fetchOutput.result is FetchResult.Warning) {
+                val userConfirmed = showWarningDialog(
+                    title = "Warning",
+                    description = fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers"
+                )
+                if (!userConfirmed) return@launch
+                progressDialog.show()
+                fetchOutput = DriversFetcher.fetchReleases(repoUrl, true) { downloadedBytes, totalBytes ->
+                    // when using unit it stays to of this unit origin thread that's why we need to use main thread
+                    GlobalScope.launch(Dispatchers.Main) {
+                        if (totalBytes > 0) {
+                            if (progressBar?.isIndeterminate ?: false) progressBar?.isIndeterminate = false
+                            if (progressText?.visibility == View.GONE) progressText?.visibility = View.VISIBLE
+                            val progress = (downloadedBytes * 100 / totalBytes).toInt()
+                            progressBar?.max = 100
+                            progressBar?.progress = progress
+                            progressText?.text = "$progress%"
+                        } else { 
+                            if (progressText?.visibility == View.VISIBLE) progressText?.visibility = View.GONE  
+                            if (!(progressBar?.isIndeterminate ?: false)) progressBar?.isIndeterminate = true
+                        }
+                    }
+                }
+                progressDialog.dismiss()
+            }
+            
+            val releaseNames = fetchOutput.fetchedDrivers.map { it.first }
+            val releaseUrls = fetchOutput.fetchedDrivers.map { it.second }
             var chosenUrl: String? = releaseUrls[0]
             var chosenName: String? = releaseNames[0]
 
@@ -222,9 +292,30 @@ class DriverManagerFragment : Fragment() {
                 .setView(R.layout.dialog_progress_bar)
                 .setCancelable(false)
                 .create()
+                
             progressDialog.show()
 
-            val result = DriversFetcher.downloadAsset(requireContext(), chosenUrl, createZipFile!!.uri)
+            val progressBar = progressDialog.findViewById<LinearProgressIndicator>(R.id.progress_bar)
+            val progressText = progressDialog.findViewById<TextView>(R.id.progress_text)
+            progressText?.visibility = View.GONE  
+            progressBar?.isIndeterminate = true
+
+            val result = DriversFetcher.downloadAsset(requireContext(), chosenUrl, createZipFile!!.uri) { downloadedBytes, totalBytes ->
+                // when using unit it stays to of this unit origin thread that's why we need to use main thread
+                GlobalScope.launch(Dispatchers.Main) {
+                    if (totalBytes > 0) {
+                        if (progressBar?.isIndeterminate ?: false) progressBar?.isIndeterminate = false
+                        if (progressText?.visibility == View.GONE) progressText?.visibility = View.VISIBLE
+                        val progress = (downloadedBytes * 100 / totalBytes).toInt()
+                        progressBar?.max = 100
+                        progressBar?.progress = progress
+                        progressText?.text = "$progress%"
+                    } else { 
+                        if (progressText?.visibility == View.VISIBLE) progressText?.visibility = View.GONE  
+                        if (!(progressBar?.isIndeterminate ?: false)) progressBar?.isIndeterminate = true
+                    }
+                }
+            }
             progressDialog.dismiss()
 
             when (result) {
@@ -272,12 +363,33 @@ class DriverManagerFragment : Fragment() {
     }
 
     private fun showErrorDialog(message: String) {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Error")
-            .setMessage(message)
-            .setPositiveButton(android.R.string.ok, null)
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+        MessageDialogFragment.newInstance(
+            requireActivity(),
+            title = "Error",
+            description = message
+        ).show(parentFragmentManager, MessageDialogFragment.TAG)
+    }
+
+    private suspend fun showWarningDialog(
+        title: String,
+        description: String
+    ): Boolean = suspendCancellableCoroutine { continuation ->
+        val dialog = MessageDialogFragment.newInstance(
+            requireActivity(),
+            title = title,
+            description = description,
+            positiveButtonTitle = "Continue",
+            positiveAction = { if (continuation.isActive) continuation.resume(true) },
+            negativeButtonTitle = android.R.string.cancel,
+            negativeAction = { if (continuation.isActive) continuation.resume(false) }
+        )
+        dialog.setOnDismissListener {
+            lifecycleScope.launch {
+                delay(1000)
+                if (continuation.isActive) continuation.resume(false)
+            }
+        }
+        dialog.show(parentFragmentManager, MessageDialogFragment.TAG)
     }
 
     private fun setInsets() =

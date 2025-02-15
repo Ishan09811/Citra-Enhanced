@@ -10,16 +10,22 @@ import org.json.JSONObject
 import java.io.File
 import java.io.InputStream
 
-class GpuDriverMetadata {
+class GpuDriverMetadata(
+    var name: String? = null,
+    var description: String? = null,
+    var author: String? = null,
+    var vendor: String? = null,
+    var version: String? = null,
+    var minApi: Int = 0,
+    var libraryName: String? = null
+) {
     /**
      * Tries to get driver metadata information from a meta.json [File]
      *
      * @param metadataFile meta.json file provided with a GPU driver
      */
-    constructor(metadataFile: File) {
-        if (metadataFile.length() > MAX_META_SIZE_BYTES) {
-            return
-        }
+    constructor(metadataFile: File) : this() {
+        if (metadataFile.length() > MAX_META_SIZE_BYTES) return
 
         try {
             val json = JSONObject(FileUtil.getStringFromFile(metadataFile))
@@ -44,10 +50,8 @@ class GpuDriverMetadata {
      * @param metadataStream ZipEntry input stream
      * @param size Size of the file in bytes
      */
-    constructor(metadataStream: InputStream, size: Long) {
-        if (size > MAX_META_SIZE_BYTES) {
-            return
-        }
+    constructor(metadataStream: InputStream, size: Long) : this() {
+        if (size > MAX_META_SIZE_BYTES) return
 
         try {
             val json = JSONObject(FileUtil.getStringFromInputStream(metadataStream, size))
@@ -65,16 +69,8 @@ class GpuDriverMetadata {
         }
     }
 
-    /**
-     * Creates an empty metadata instance
-     */
-    constructor()
-
     override fun equals(other: Any?): Boolean {
-        if (other !is GpuDriverMetadata) {
-            return false
-        }
-
+        if (other !is GpuDriverMetadata) return false
         return other.name == name &&
                 other.description == description &&
                 other.author == author &&
@@ -105,14 +101,6 @@ class GpuDriverMetadata {
             Min API - $minApi
             Library Name - $libraryName
         """.trimMargin().trimIndent()
-
-    var name: String? = null
-    var description: String? = null
-    var author: String? = null
-    var vendor: String? = null
-    var version: String? = null
-    var minApi = 0
-    var libraryName: String? = null
 
     companion object {
         private const val MAX_META_SIZE_BYTES = 500000

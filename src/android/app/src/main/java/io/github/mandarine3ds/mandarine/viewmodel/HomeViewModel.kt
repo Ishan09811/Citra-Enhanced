@@ -22,6 +22,9 @@ class HomeViewModel : ViewModel() {
     val statusBarShadeVisible get() = _statusBarShadeVisible.asStateFlow()
     private val _statusBarShadeVisible = MutableStateFlow(true)
 
+    private val _reloadGameAboutList = MutableStateFlow(false)
+    val reloadGameAboutList get() = _reloadGameAboutList.asStateFlow()
+
     val isPickingUserDir get() = _isPickingUserDir.asStateFlow()
     private val _isPickingUserDir = MutableStateFlow(false)
 
@@ -100,5 +103,9 @@ class HomeViewModel : ViewModel() {
 
     fun setCopyComplete(complete: Boolean) {
         _copyComplete.value = complete
+    }
+
+    fun reloadGameAboutList(reload: Boolean) {
+        _reloadGameAboutList.value = reload
     }
 }
