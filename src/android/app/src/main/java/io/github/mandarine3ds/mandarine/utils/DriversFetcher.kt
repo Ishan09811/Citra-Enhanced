@@ -47,16 +47,18 @@ object DriversFetcher {
         val apiUrl = "https://api.github.com/repos/$repoPath/releases"
 
         return try {
-            val releases: List<GitHubRelease> = withContext(Dispatchers.IO) {
+            val response: HttpResponse = withContext(Dispatchers.IO) {
                 try {
                     httpClient.get(apiUrl)
                 } catch (e: Exception) {
-                    return FetchResultOutput(emptyList(), FetchResult.Error("Failed to fetch drivers: ${e.message}"))
+                    return@withContext FetchResultOutput(emptyList(), FetchResult.Error("Failed to fetch drivers: ${e.message}"))
                 }
             }
 
-            if (releases.status.value != 200) 
+            if (response.status.value != 200) 
                 return FetchResultOutput(emptyList(), FetchResult.Error("Failed to fetch drivers"))
+
+            val releases = response.body()
             
             val isValid = withContext(Dispatchers.IO) {
                 try {
@@ -70,7 +72,7 @@ object DriversFetcher {
                 return FetchResultOutput(emptyList(), FetchResult.Warning("Provided driver repo url is not valid."))
             }
 
-            val drivers = releases.body().map { release ->
+            val drivers = releases.map { release ->
                 val assetUrl = release.assets.firstOrNull()?.browser_download_url
                 release.name to assetUrl
             }
