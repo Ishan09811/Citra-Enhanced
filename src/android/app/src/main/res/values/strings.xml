@@ -518,6 +518,8 @@
     <string name="save_data_description">Manage save data specific to this game</string>
     <string name="save_management">Save Management</string>
     <string name="misc_import">Import</string>
+    <string name="delete_save_data">Delete Save Data</string>
+    <string name="delete_save_data_description">Remove save data specific to this game</string>
     
 
     <!-- Cheats -->
