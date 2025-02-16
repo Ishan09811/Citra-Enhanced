@@ -345,6 +345,7 @@
     <string name="setting_not_editable">You can\'t edit this now</string>
     <string name="setting_not_editable_description">This option can\'t be changed while a game is running.</string>
     <string name="auto_select">Auto-Select</string>
+    <string name="irreversible_action">This action is irreversible</string>
 
     <!-- Add Directory Screen-->
     <string name="select_game_folder">Select Game Folder</string>
@@ -520,7 +521,6 @@
     <string name="misc_import">Import</string>
     <string name="delete_save_data">Delete Save Data</string>
     <string name="delete_save_data_description">Remove save data specific to this game</string>
-    
 
     <!-- Cheats -->
     <string name="cheats">Cheats</string>
