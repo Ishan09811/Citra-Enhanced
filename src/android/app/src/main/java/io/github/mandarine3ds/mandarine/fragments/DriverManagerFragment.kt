@@ -196,7 +196,11 @@ class DriverManagerFragment : Fragment() {
 
     private fun fetchAndShowDrivers(repoUrl: String) {
         lifecycleScope.launch(Dispatchers.Main) {
-            val progressDialog = createProgressDialog("Fetching")
+            val progressDialog =  MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Fetching")
+                .setView(R.layout.dialog_progress_bar)
+                .setCancelable(false)
+                .create()
             progressDialog.show()
             val progressBar = progressDialog.findViewById<LinearProgressIndicator>(R.id.progress_bar)
             val progressText = progressDialog.findViewById<TextView>(R.id.progress_text)
@@ -276,7 +280,13 @@ class DriverManagerFragment : Fragment() {
             val createZipFile = tempDriverZipFile.createFile("application/zip", chosenName)
             val driverFile: DocumentFile
 
-            val progressDialog = createProgressDialog("Downloading Driver").show()
+            val progressDialog = MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Downloading Driver")
+                .setView(R.layout.dialog_progress_bar)
+                .setCancelable(false)
+                .create()
+                
+            progressDialog.show()
 
             val progressBar = progressDialog.findViewById<LinearProgressIndicator>(R.id.progress_bar)
             val progressText = progressDialog.findViewById<TextView>(R.id.progress_text)
@@ -373,14 +383,6 @@ class DriverManagerFragment : Fragment() {
             }
         }
         dialog.show(parentFragmentManager, MessageDialogFragment.TAG)
-    }
-
-    private fun createProgressDialog(title: String): AlertDialog {
-       return MaterialAlertDialogBuilder(requireContext())
-            .setTitle(title)
-            .setView(R.layout.dialog_progress_bar)
-            .setCancelable(false)
-            .create()
     }
 
     private fun setInsets() =
