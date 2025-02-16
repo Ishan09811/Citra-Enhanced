@@ -41,7 +41,11 @@ object DriversFetcher {
     @Serializable
     data class Asset(val browser_download_url: String)
 
-    suspend fun fetchReleases(repoUrl: String, bypassValidation: Boolean = false): FetchResultOutput {
+    suspend fun fetchReleases(
+        repoUrl: String, 
+        bypassValidation: Boolean = false,
+        progressCallback: (Long, Long) -> Unit
+    ): FetchResultOutput {
         val repoPath = repoUrl.removePrefix("https://github.com/")
         val validationUrl = "https://api.github.com/repos/$repoPath/contents/.adrenoDrivers"
         val apiUrl = "https://api.github.com/repos/$repoPath/releases"
@@ -53,8 +57,6 @@ object DriversFetcher {
 
             if (response.status.value != 200) 
                 return FetchResultOutput(emptyList(), FetchResult.Error("Failed to fetch drivers"))
-
-            val releases: List<GitHubRelease> = response.body()
             
             val isValid = withContext(Dispatchers.IO) {
                 try {
@@ -67,6 +69,23 @@ object DriversFetcher {
             if (!isValid && !bypassValidation) {
                 return FetchResultOutput(emptyList(), FetchResult.Warning("Provided driver repo url is not valid."))
             }
+
+            val contentLength = response.headers[HttpHeaders.ContentLength]?.toLong() ?: -1L
+            val responseChannel = response.bodyAsChannel()
+            val buffer = ByteArray(1024) // 1KB buffer
+            var totalBytesRead = 0L
+            val responseStringBuilder = StringBuilder()
+
+            while (!responseChannel.isClosedForRead) {
+                val bytesRead = responseChannel.readAvailable(buffer)
+                if (bytesRead > 0) {
+                    totalBytesRead += bytesRead
+                    responseStringBuilder.append(buffer.decodeToString(0, bytesRead))
+                    progressCallback(totalBytesRead, contentLength)
+                }
+            }
+
+            val releases: List<GitHubRelease> = Json.decodeFromString(responseStringBuilder.toString())
 
             val drivers = releases.map { release ->
                 val assetUrl = release.assets.firstOrNull()?.browser_download_url
