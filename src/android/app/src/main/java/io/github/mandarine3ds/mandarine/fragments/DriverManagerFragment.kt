@@ -200,19 +200,12 @@ class DriverManagerFragment : Fragment() {
             }
 
             if (fetchOutput.result is FetchResult.Warning) {
-                MessageDialogFragment.newInstance(
-                    requireActivity(),
+                val userConfirmed = showMessageDialog(
                     title = "Warning",
-                    description = fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers",
-                    positiveButtonTitle = "Continue",
-                    positiveAction = { 
-                        // when using unit it stays to of this unit origin thread that's why we need to use main thread
-                        lifecycleScope.launch {
-                            fetchOutput = DriversFetcher.fetchReleases(repoUrl, true)
-                        }
-                    },
-                    negativeButtonTitle = android.R.string.cancel
-                ).show(parentFragmentManager, MessageDialogFragment.TAG)
+                    description = fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers"
+                )
+                if (!userConfirmed) return@launch
+                fetchOutput = DriversFetcher.fetchReleases(repoUrl, true
             }
             
             val releaseNames = fetchOutput.fetchedDrivers.map { it.first }
@@ -318,6 +311,21 @@ class DriverManagerFragment : Fragment() {
             requireActivity(),
             title = "Error",
             description = message
+        ).show(parentFragmentManager, MessageDialogFragment.TAG)
+    }
+
+    private suspend fun showWarningDialog(
+        title: String,
+        description: String
+    ): Boolean = suspendCoroutine { continuation ->
+        MessageDialogFragment.newInstance(
+            requireActivity(),
+            title = title,
+            description = description,
+            positiveButtonTitle = "Continue",
+            positiveAction = { continuation.resume(true) },
+            negativeButtonTitle = android.R.string.cancel,
+            negativeAction = { continuation.resume(false) }
         ).show(parentFragmentManager, MessageDialogFragment.TAG)
     }
 
