@@ -196,7 +196,8 @@ class DriverManagerFragment : Fragment() {
 
     private fun fetchAndShowDrivers(repoUrl: String) {
         lifecycleScope.launch(Dispatchers.Main) {
-            val progressDialog = createProgressDialog("Fetching").show()
+            val progressDialog = createProgressDialog("Fetching")
+            progressDialog.show()
             val progressBar = progressDialog.findViewById<LinearProgressIndicator>(R.id.progress_bar)
             val progressText = progressDialog.findViewById<TextView>(R.id.progress_text)
             progressText?.visibility = View.GONE  
