@@ -688,7 +688,7 @@ object FileUtil {
         val shadersDir = root?.findFile("shaders") ?: return false
         val backendDir = when (IntSetting.GRAPHICS_API.int) {
              1 -> shadersDir?.findFile("opengl")
-             0 -> shadersDir?.findFile("vulkan")
+             2 -> shadersDir?.findFile("vulkan")
              else -> shadersDir?.findFile("opengl")
         }
 
@@ -712,7 +712,7 @@ object FileUtil {
         
         val backendDir = when (IntSetting.GRAPHICS_API.int) {
              1 -> shadersDir?.findFile("opengl")
-             0 -> shadersDir?.findFile("vulkan")
+             2 -> shadersDir?.findFile("vulkan")
              else -> shadersDir?.findFile("opengl")
         }
 
