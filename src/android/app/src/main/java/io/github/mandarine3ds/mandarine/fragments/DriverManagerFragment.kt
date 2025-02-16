@@ -195,8 +195,30 @@ class DriverManagerFragment : Fragment() {
 
     private fun fetchAndShowDrivers(repoUrl: String) {
         lifecycleScope.launch(Dispatchers.Main) {
-            var fetchOutput = DriversFetcher.fetchReleases(repoUrl)
-
+            val progressDialog = createProgressDialog("Downloading Driver").show()
+            val progressBar = progressDialog.findViewById<LinearProgressIndicator>(R.id.progress_bar)
+            val progressText = progressDialog.findViewById<TextView>(R.id.progress_text)
+            progressText?.visibility = View.GONE  
+            progressBar?.isIndeterminate = true
+            
+            var fetchOutput = DriversFetcher.fetchReleases(repoUrl) { downloadedBytes, totalBytes ->
+                // when using unit it stays to of this unit origin thread that's why we need to use main thread
+                GlobalScope.launch(Dispatchers.Main) {
+                    if (totalBytes > 0) {
+                        if (progressBar?.isIndeterminate ?: false) progressBar?.isIndeterminate = false
+                        if (progressText?.visibility == View.GONE) progressText?.visibility = View.VISIBLE
+                        val progress = (downloadedBytes * 100 / totalBytes).toInt()
+                        progressBar?.max = 100
+                        progressBar?.progress = progress
+                        progressText?.text = "$progress%"
+                    } else { 
+                        if (progressText?.visibility == View.VISIBLE) progressText?.visibility = View.GONE  
+                        if (!(progressBar?.isIndeterminate ?: false)) progressBar?.isIndeterminate = true
+                    }
+                }
+            }
+            progressDialog.dismiss()
+            
             if (fetchOutput.result is FetchResult.Error) {
                 showErrorDialog(fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers")
                 return@launch
@@ -208,7 +230,24 @@ class DriverManagerFragment : Fragment() {
                     description = fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers"
                 )
                 if (!userConfirmed) return@launch
-                fetchOutput = DriversFetcher.fetchReleases(repoUrl, true)
+                progressDialog.show()
+                fetchOutput = DriversFetcher.fetchReleases(repoUrl, true) { downloadedBytes, totalBytes ->
+                    // when using unit it stays to of this unit origin thread that's why we need to use main thread
+                    GlobalScope.launch(Dispatchers.Main) {
+                        if (totalBytes > 0) {
+                            if (progressBar?.isIndeterminate ?: false) progressBar?.isIndeterminate = false
+                            if (progressText?.visibility == View.GONE) progressText?.visibility = View.VISIBLE
+                            val progress = (downloadedBytes * 100 / totalBytes).toInt()
+                            progressBar?.max = 100
+                            progressBar?.progress = progress
+                            progressText?.text = "$progress%"
+                        } else { 
+                            if (progressText?.visibility == View.VISIBLE) progressText?.visibility = View.GONE  
+                            if (!(progressBar?.isIndeterminate ?: false)) progressBar?.isIndeterminate = true
+                        }
+                    }
+                }
+                progressDialog.dismiss()
             }
             
             val releaseNames = fetchOutput.fetchedDrivers.map { it.first }
@@ -235,12 +274,7 @@ class DriverManagerFragment : Fragment() {
             val createZipFile = tempDriverZipFile.createFile("application/zip", chosenName)
             val driverFile: DocumentFile
 
-            val progressDialog = MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Downloading Driver")
-                .setView(R.layout.dialog_progress_bar)
-                .setCancelable(false)
-                .create()
-            progressDialog.show()
+            val progressDialog = createProgressDialog("Downloading Driver")
 
             val progressBar = progressDialog.findViewById<LinearProgressIndicator>(R.id.progress_bar)
             val progressText = progressDialog.findViewById<TextView>(R.id.progress_text)
@@ -337,6 +371,14 @@ class DriverManagerFragment : Fragment() {
             }
         }
         dialog.show(parentFragmentManager, MessageDialogFragment.TAG)
+    }
+
+    private fun createProgressDialog(title: String) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(title)
+            .setView(R.layout.dialog_progress_bar)
+            .setCancelable(false)
+            .create()
     }
 
     private fun setInsets() =
