@@ -269,7 +269,7 @@ class GameAboutFragment : Fragment() {
                             MessageDialogFragment.newInstance(
                                 requireActivity(),
                                 title = R.string.delete_save_data,
-                                description = R.string.delete_save_data_warning_description,
+                                description = R.string.irreversible_action,
                                 positiveButtonTitle = android.R.string.cancel,
                                 negativeButtonTitle = android.R.string.ok,
                                 negativeAction = {
