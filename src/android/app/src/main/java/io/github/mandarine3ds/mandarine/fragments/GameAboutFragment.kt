@@ -186,6 +186,11 @@ class GameAboutFragment : Fragment() {
             view.findNavController().navigate(action)
         }
 
+	homeViewModel.reloadGameAboutList.collect(
+            viewLifecycleOwner,
+            resetState = { homeViewModel.reloadGameAboutList(false) }
+        ) { if (it) reloadList() }
+
         reloadList()
         setInsets()
     }
@@ -279,6 +284,7 @@ class GameAboutFragment : Fragment() {
                                         R.string.save_data_deleted_successfully,
                                         Toast.LENGTH_SHORT
                                     ).show()
+				    homeViewModel.reloadGameAboutList(true)
                                 }
                             ).show(parentFragmentManager, MessageDialogFragment.TAG)
                         }
