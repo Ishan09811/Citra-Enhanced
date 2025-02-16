@@ -686,7 +686,7 @@ object FileUtil {
         )
         
         val shadersDir = root?.findFile("shaders") ?: return false
-        val backendDir = when (IntSetting.GRAPHICS_API) {
+        val backendDir = when (IntSetting.GRAPHICS_API.int) {
              0 -> shadersDir?.findFile("opengl")
              1 -> shadersDir?.findFile("vulkan")
              else -> shadersDir?.findFile("opengl")
@@ -708,9 +708,9 @@ object FileUtil {
         val shadersDir = DocumentFile.fromTreeUri(
             context,
             Uri.parse(DirectoryInitialization.userPath)
-        ).findFile("shaders") ?: return false
+        )?.findFile("shaders") ?: return false
         
-        val backendDir = when (IntSetting.GRAPHICS_API) {
+        val backendDir = when (IntSetting.GRAPHICS_API.int) {
              0 -> shadersDir?.findFile("opengl")
              1 -> shadersDir?.findFile("vulkan")
              else -> shadersDir?.findFile("opengl")
