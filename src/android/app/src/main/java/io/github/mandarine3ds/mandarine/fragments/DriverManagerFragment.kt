@@ -46,6 +46,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlin.coroutines.suspendCoroutine
 import java.io.IOException
 
 class DriverManagerFragment : Fragment() {
@@ -205,7 +206,7 @@ class DriverManagerFragment : Fragment() {
                     description = fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers"
                 )
                 if (!userConfirmed) return@launch
-                fetchOutput = DriversFetcher.fetchReleases(repoUrl, true
+                fetchOutput = DriversFetcher.fetchReleases(repoUrl, true)
             }
             
             val releaseNames = fetchOutput.fetchedDrivers.map { it.first }
@@ -323,15 +324,14 @@ class DriverManagerFragment : Fragment() {
             title = title,
             description = description,
             positiveButtonTitle = "Continue",
-            positiveAction = { if (continuation.isActive) continuation.resume(true) },
+            positiveAction = { continuation.resume(true) },
             negativeButtonTitle = android.R.string.cancel,
-            negativeAction = { if (continuation.isActive) continuation.resume(false) }
+            negativeAction = { continuation.resume(false) }
         )
-
         dialog.setOnDismissListener {
             lifecycleScope.launch {
-                delay(1000) // wait for 1 sec
-                if (continuation.isActive) continuation.resume(false)  
+                delay(1000)
+                continuation.resume(false)
             }
         }
         dialog.show(parentFragmentManager, MessageDialogFragment.TAG)
