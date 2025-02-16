@@ -697,7 +697,7 @@ object FileUtil {
         
         if (conventionalDir != null && conventionalDir.isDirectory) {
             for (file in conventionalDir.listFiles()) {
-                if (file.getName() == titleId) file.delete()
+                if (file.getName() == "${titleId}.bin") file.delete()
             }
         } else return false
 
@@ -720,7 +720,7 @@ object FileUtil {
 
         val precompiledDir = backendDir?.findFile("precompiled") ?: return false
         val conventionalDir = precompiledDir?.findFile("conventional") ?: return false
-        val shaderCache = conventionalDir?.findFile(titleId) ?: return false
+        val shaderCache = conventionalDir?.findFile("${titleId}.bin") ?: return false
         return true
     }
 
