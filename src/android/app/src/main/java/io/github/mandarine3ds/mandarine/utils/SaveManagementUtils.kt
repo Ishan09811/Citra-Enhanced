@@ -242,11 +242,9 @@ interface SaveManagementUtils {
         /**
          * Deletes the save file for a given game.
          */
-        /*fun deleteSaveFile(titleId : String?) : Boolean {
-            if (titleId == null) return false
-            File("$savesFolderRoot/$titleId").deleteRecursively()
-            return true
-        }*/
+        fun deleteSaveFile(titleId : String) : Boolean {
+            return MandarineApplication.documentsTree.deleteDocument("${savesFolderRoot}/${titleId.lowercase().substring(0, 8)}/${titleId.lowercase().substring(8)}/data/00000001/main")
+        }
 
         private fun copy(inputFile: File, outputFile: String) {
             var outputUriFile = DocumentFile.fromTreeUri(MandarineApplication.appContext, MandarineApplication.documentsTree.getUri(outputFile)!!)                
