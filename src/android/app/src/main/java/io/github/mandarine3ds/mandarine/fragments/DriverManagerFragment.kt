@@ -46,7 +46,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.delay
+import kotlin.coroutines.resume
 import java.io.IOException
 
 class DriverManagerFragment : Fragment() {
@@ -318,7 +320,7 @@ class DriverManagerFragment : Fragment() {
     private suspend fun showWarningDialog(
         title: String,
         description: String
-    ): Boolean = suspendCoroutine { continuation ->
+    ): Boolean = suspendCancellableCoroutine { continuation ->
         val dialog = MessageDialogFragment.newInstance(
             requireActivity(),
             title = title,
