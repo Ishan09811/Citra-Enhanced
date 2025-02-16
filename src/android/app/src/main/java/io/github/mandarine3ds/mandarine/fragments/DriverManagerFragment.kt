@@ -205,7 +205,12 @@ class DriverManagerFragment : Fragment() {
                     title = "Warning",
                     description = fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers",
                     positiveButtonTitle = "Continue",
-                    positiveAction = { fetchOutput = DriversFetcher.fetchReleases(repoUrl, true) },
+                    positiveAction = { 
+                        // when using unit it stays to of this unit origin thread that's why we need to use main thread
+                        lifecycleScope.launch {
+                            fetchOutput = DriversFetcher.fetchReleases(repoUrl, true)
+                        }
+                    },
                     negativeButtonTitle = android.R.string.cancel
                 ).show(parentFragmentManager, MessageDialogFragment.TAG)
             }
