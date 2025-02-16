@@ -14,6 +14,7 @@ import android.util.Pair
 import androidx.documentfile.provider.DocumentFile
 import io.github.mandarine3ds.mandarine.MandarineApplication
 import io.github.mandarine3ds.mandarine.model.CheapDocument
+import io.github.mandarine3ds.mandarine.features.settings.model.IntSetting
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -676,6 +677,51 @@ object FileUtil {
         val modsParentDir = loadDir!!.findFile("mods") ?: loadDir!!.createDirectory("mods")
         val modsDir = modsParentDir!!.findFile(titleId) ?: modsParentDir!!.createDirectory(titleId)
         return modsDir!!
+    }
+
+    fun deleteShaderCache(titleId: String) {
+        val root = DocumentFile.fromTreeUri(
+            context,
+            Uri.parse(DirectoryInitialization.userPath)
+        )
+        
+        val shadersDir = root?.findFile("shaders") ?: return false
+        val backendDir = when (IntSetting.GRAPHICS_API) {
+             0 -> shadersDir?.findFile("opengl")
+             1 -> shadersDir?.findFile("vulkan")
+             else -> shadersDir?.findFile("opengl")
+        }
+
+        val precompiledDir = backendDir?.findFile("precompiled") ?: return false
+        val conventionalDir = precompiledDir?.findFile("conventional") ?: return false
+        
+        if (conventionalDir != null && conventionalDir.isDirectory) {
+            for (file in conventionalDir.listFiles()) {
+                if (file.getName() == titleId) file.delete()
+            }
+        } else return false
+
+        return true
+    }
+
+    fun isShaderCacheExists(titleId: String): Boolean {
+        val shadersDir = DocumentFile.fromTreeUri(
+            context,
+            Uri.parse(DirectoryInitialization.userPath)
+        ).findFile("shaders") ?: return false
+        
+        val backendDir = when (IntSetting.GRAPHICS_API) {
+             0 -> shadersDir?.findFile("opengl")
+             1 -> shadersDir?.findFile("vulkan")
+             else -> shadersDir?.findFile("opengl")
+        }
+
+        if (backendDir == null) return false
+
+        val precompiledDir = backendDir?.findFile("precompiled") ?: return false
+        val conventionalDir = precompiledDir?.findFile("conventional") ?: return false
+        val shaderCache = conventionalDir?.findFile(titleId) ?: return false
+        return true
     }
 
     @Throws(IOException::class)
