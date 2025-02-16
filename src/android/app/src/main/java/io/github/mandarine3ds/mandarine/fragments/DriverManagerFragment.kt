@@ -47,7 +47,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.suspendCancellableCoroutine.isActive
 import kotlinx.coroutines.delay
 import kotlin.coroutines.resume
 import java.io.IOException
