@@ -373,8 +373,8 @@ class DriverManagerFragment : Fragment() {
         dialog.show(parentFragmentManager, MessageDialogFragment.TAG)
     }
 
-    private fun createProgressDialog(title: String) {
-        MaterialAlertDialogBuilder(requireContext())
+    private fun createProgressDialog(title: String): AlertDialog {
+       return MaterialAlertDialogBuilder(requireContext())
             .setTitle(title)
             .setView(R.layout.dialog_progress_bar)
             .setCancelable(false)
