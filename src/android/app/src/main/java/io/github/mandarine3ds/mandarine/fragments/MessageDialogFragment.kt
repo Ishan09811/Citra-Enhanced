@@ -18,6 +18,7 @@ import io.github.mandarine3ds.mandarine.viewmodel.MessageDialogViewModel
 
 class MessageDialogFragment : DialogFragment() {
     private val messageDialogViewModel: MessageDialogViewModel by activityViewModels()
+    private var onDismissListener: (() -> Unit)? = null
     
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val unknownTitle = requireArguments().get(TITLE)
@@ -97,6 +98,15 @@ class MessageDialogFragment : DialogFragment() {
         }
 
         return dialogBuilder.show()
+    }
+
+    fun setOnDismissListener(listener: () -> Unit) {
+        onDismissListener = listener
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        onDismissListener?.invoke()
     }
 
     private fun openLink(link: String) {
