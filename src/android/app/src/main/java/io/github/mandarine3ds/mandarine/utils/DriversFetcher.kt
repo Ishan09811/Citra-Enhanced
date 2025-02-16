@@ -85,7 +85,7 @@ object DriversFetcher {
                 }
             }
 
-            val releases: List<GitHubRelease> = Json.decodeFromString(responseStringBuilder.toString())
+            val releases: List<GitHubRelease> = Json { ignoreUnknownKeys = true }.decodeFromString(responseStringBuilder.toString())
 
             val drivers = releases.map { release ->
                 val assetUrl = release.assets.firstOrNull()?.browser_download_url
