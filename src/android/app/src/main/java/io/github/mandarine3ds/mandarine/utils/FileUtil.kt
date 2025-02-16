@@ -679,7 +679,7 @@ object FileUtil {
         return modsDir!!
     }
 
-    fun deleteShaderCache(titleId: String) {
+    fun deleteShaderCache(titleId: String): Boolean {
         val root = DocumentFile.fromTreeUri(
             context,
             Uri.parse(DirectoryInitialization.userPath)
