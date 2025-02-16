@@ -200,7 +200,7 @@ class DriverManagerFragment : Fragment() {
             }
 
             if (fetchOutput.result is FetchResult.Warning) {
-                val userConfirmed = showMessageDialog(
+                val userConfirmed = showWarningDialog(
                     title = "Warning",
                     description = fetchOutput.result.message ?: "Something unexpected occurred while fetching $repoUrl drivers"
                 )
@@ -318,15 +318,23 @@ class DriverManagerFragment : Fragment() {
         title: String,
         description: String
     ): Boolean = suspendCoroutine { continuation ->
-        MessageDialogFragment.newInstance(
+        val dialog = MessageDialogFragment.newInstance(
             requireActivity(),
             title = title,
             description = description,
             positiveButtonTitle = "Continue",
-            positiveAction = { continuation.resume(true) },
+            positiveAction = { if (continuation.isActive) continuation.resume(true) },
             negativeButtonTitle = android.R.string.cancel,
-            negativeAction = { continuation.resume(false) }
-        ).show(parentFragmentManager, MessageDialogFragment.TAG)
+            negativeAction = { if (continuation.isActive) continuation.resume(false) }
+        )
+
+        dialog.setOnDismissListener {
+            lifecycleScope.launch {
+                delay(1000) // wait for 1 sec
+                if (continuation.isActive) continuation.resume(false)  
+            }
+        }
+        dialog.show(parentFragmentManager, MessageDialogFragment.TAG)
     }
 
     private fun setInsets() =
