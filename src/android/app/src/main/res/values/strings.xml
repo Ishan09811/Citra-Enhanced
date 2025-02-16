@@ -522,6 +522,8 @@
     <string name="delete_save_data">Delete Save Data</string>
     <string name="delete_save_data_description">Remove save data specific to this game</string>
     <string name="save_data_deleted_successfully">Successfully deleted save data</string>
+    <string name="clear_shader_cache">Clear Shader Cache</string>
+    <string name="clear_shader_cache_description">Removes all shaders built while playing this game</string>
 
     <!-- Cheats -->
     <string name="cheats">Cheats</string>
