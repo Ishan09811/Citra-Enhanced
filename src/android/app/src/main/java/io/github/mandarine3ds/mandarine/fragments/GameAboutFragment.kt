@@ -258,7 +258,10 @@ class GameAboutFragment : Fragment() {
 			positiveButtonTitle = R.string.misc_import,
 			negativeButtonTitle = R.string.export,
 			neutralButtonTitle = android.R.string.cancel,
-                        positiveAction = { SaveManagementUtils.importSave(documentPicker) },
+                        positiveAction = { 
+			    SaveManagementUtils.importSave(documentPicker) 
+			    homeViewModel.reloadGameAboutList(true)
+			},
 			negativeAction = { SaveManagementUtils.exportSave(startForResultExportSave, String.format("%016X", args.game.titleId), "${args.game.title} (v1.0) [${String.format("%016X", args.game.titleId)}]") },
 			neutralAction = { null }
                     ).show(parentFragmentManager, MessageDialogFragment.TAG)
@@ -358,6 +361,7 @@ class GameAboutFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+	homeViewModel.reloadGameAboutList(true)
     }
 
     private fun setInsets() =
