@@ -259,6 +259,32 @@ class GameAboutFragment : Fragment() {
                     ).show(parentFragmentManager, MessageDialogFragment.TAG)
                 }
             )
+	    if (SaveManagementUtils.saveFolderGameExists(String.format("%016X", args.game.titleId))) {
+                add(
+                    SubmenuGameAbout(
+                        R.string.delete_save_data,
+                        R.string.delete_save_data_description,
+                        R.drawable.ic_delete,
+                        action = {
+                            MessageDialogFragment.newInstance(
+                                requireActivity(),
+                                title = R.string.delete_save_data,
+                                description = R.string.delete_save_data_warning_description,
+                                positiveButtonTitle = android.R.string.cancel,
+                                negativeButtonTitle = android.R.string.ok,
+                                negativeAction = {
+                                    SaveManagementUtils.deleteSaveFile(String.format("%016X", args.game.titleId))
+                                    Toast.makeText(
+                                        MandarineApplication.appContext,
+                                        R.string.save_data_deleted_successfully,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            ).show(parentFragmentManager, MessageDialogFragment.TAG)
+                        }
+                    )
+                )
+            }
         }
         binding.listProperties.apply {
             layoutManager =
