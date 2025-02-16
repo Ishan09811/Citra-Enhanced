@@ -274,7 +274,7 @@ class DriverManagerFragment : Fragment() {
             val createZipFile = tempDriverZipFile.createFile("application/zip", chosenName)
             val driverFile: DocumentFile
 
-            val progressDialog = createProgressDialog("Downloading Driver")
+            val progressDialog = createProgressDialog("Downloading Driver").show()
 
             val progressBar = progressDialog.findViewById<LinearProgressIndicator>(R.id.progress_bar)
             val progressText = progressDialog.findViewById<TextView>(R.id.progress_text)
