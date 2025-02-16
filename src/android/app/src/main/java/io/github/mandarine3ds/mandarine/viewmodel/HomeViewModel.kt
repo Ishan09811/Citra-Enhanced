@@ -26,7 +26,7 @@ class HomeViewModel : ViewModel() {
     private val _statusBarShadeVisible = MutableStateFlow(true)
 
     private val _reloadGameAboutList = MutableStateFlow(false)
-    val reloadGameAboutList get() = _reloadPropertiesList.asStateFlow()
+    val reloadGameAboutList get() = _reloadGameAboutList.asStateFlow()
 
     val isPickingUserDir get() = _isPickingUserDir.asStateFlow()
     private val _isPickingUserDir = MutableStateFlow(false)
