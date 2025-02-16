@@ -47,6 +47,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.suspendCancellableCoroutine.isActive
 import kotlinx.coroutines.delay
 import kotlin.coroutines.resume
 import java.io.IOException
@@ -326,14 +327,14 @@ class DriverManagerFragment : Fragment() {
             title = title,
             description = description,
             positiveButtonTitle = "Continue",
-            positiveAction = { continuation.resume(true) },
+            positiveAction = { if (continuation.isActive) continuation.resume(true) },
             negativeButtonTitle = android.R.string.cancel,
-            negativeAction = { continuation.resume(false) }
+            negativeAction = { if (continuation.isActive) continuation.resume(false) }
         )
         dialog.setOnDismissListener {
             lifecycleScope.launch {
                 delay(1000)
-                continuation.resume(false)
+                if (continuation.isActive) continuation.resume(false)
             }
         }
         dialog.show(parentFragmentManager, MessageDialogFragment.TAG)
