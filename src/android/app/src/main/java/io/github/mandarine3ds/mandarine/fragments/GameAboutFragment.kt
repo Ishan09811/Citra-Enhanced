@@ -294,6 +294,31 @@ class GameAboutFragment : Fragment() {
                     )
                 )
             }
+	    if (FileUtil.isShaderCacheExists(String.format("%016X", args.game.titleId))) {
+                add(
+                    SubmenuGameAbout(
+                        R.string.clear_shader_cache,
+                        R.string.clear_shader_cache_description,
+                        R.drawable.ic_delete,
+                        action = {
+                            MessageDialogFragment.newInstance(
+                                requireActivity(),
+                                title = R.string.clear_shader_cache,
+                                description = R.string.irreversible_action,
+                                positiveAction = {
+                                    FileUtil.deleteShaderCache(String.format("%016X", args.game.titleId))
+                                    Toast.makeText(
+                                        MandarineApplication.appContext,
+                                        R.string.cleared_shaders_cache_successfully,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    homeViewModel.reloadGameAboutList(true)
+                                }
+                            ).show(parentFragmentManager, MessageDialogFragment.TAG)
+                        }
+                    )
+		)
+            }
         }
         binding.listProperties.apply {
             layoutManager =
