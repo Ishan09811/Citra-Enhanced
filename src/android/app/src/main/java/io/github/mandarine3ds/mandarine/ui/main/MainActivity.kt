@@ -51,6 +51,7 @@ import io.github.mandarine3ds.mandarine.utils.FileBrowserHelper
 import io.github.mandarine3ds.mandarine.utils.InsetsHelper
 import io.github.mandarine3ds.mandarine.utils.PermissionsHandler
 import io.github.mandarine3ds.mandarine.utils.ThemeUtil
+import io.github.mandarine3ds.mandarine.MandarineApplication
 import io.github.mandarine3ds.mandarine.viewmodel.GamesViewModel
 import io.github.mandarine3ds.mandarine.viewmodel.HomeViewModel
 import io.github.mandarine3ds.mandarine.dialogs.NetPlayDialog
@@ -242,22 +243,29 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
 
         val selectedFiles =
             FileBrowserHelper.getSelectedFiles(result, applicationContext, listOf("cia"))
-        if (selectedFiles == null) {
-            Toast.makeText(applicationContext, R.string.cia_file_not_found, Toast.LENGTH_LONG)
-                .show()
-            return@registerForActivityResult
-        }
+            
+        InstallCIAFiles(selectedFiles)
+    }
 
-        val workManager = WorkManager.getInstance(applicationContext)
-        workManager.enqueueUniqueWork(
-            "installCiaWork", ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequest.Builder(CiaInstallWorker::class.java)
-                .setInputData(
-                    Data.Builder().putStringArray("CIA_FILES", selectedFiles)
-                        .build()
-                )
-                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                .build()
-        )
+    companion object { 
+        fun InstallCIAFiles(selectedFiles: Array<String>?) {
+            if (selectedFiles == null) {
+                Toast.makeText(MandarineApplication.appContext, R.string.cia_file_not_found, Toast.LENGTH_LONG)
+                    .show()
+                return
+            }
+
+            val workManager = WorkManager.getInstance(MandarineApplication.appContext)
+            workManager.enqueueUniqueWork(
+                "installCiaWork", ExistingWorkPolicy.APPEND_OR_REPLACE,
+                OneTimeWorkRequest.Builder(CiaInstallWorker::class.java)
+                    .setInputData(
+                        Data.Builder().putStringArray("CIA_FILES", selectedFiles)
+                            .build()
+                    )
+                    .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                    .build()
+            )
+        }
     }
 }

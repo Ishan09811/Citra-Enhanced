@@ -154,6 +154,17 @@ class SettingsAdapter(
         notifyDataSetChanged()
     }
 
+    fun onClearClick(item: SettingsItem) {
+        fragmentView.activityView?.settings?.clearPerGameSetting(item, fragmentView.activityView!!)
+        (fragmentView as SettingsFragment).view?.postDelayed({
+            (fragmentView as SettingsFragment).loadSettingsList()
+        }, 200)
+    }
+
+    fun isClearable(item: SettingsItem): Boolean {
+        return fragmentView.activityView?.settings?.isSettingClearable(item.setting!!) ?: false
+    }
+
     fun onBooleanClick(item: SwitchSetting, position: Int, checked: Boolean) {
         val setting = item.setChecked(checked)
         val settingsFragment = fragmentView as SettingsFragment

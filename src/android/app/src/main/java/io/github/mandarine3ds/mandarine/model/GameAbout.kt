@@ -21,5 +21,6 @@ data class SubmenuGameAbout(
     override val iconId: Int,
     val details: (() -> String)? = null,
     val detailsFlow: StateFlow<String>? = null,
-    val action: () -> Unit
+    val action: () -> Unit,
+    val longAction: (() -> Unit)? = null
 ) : GameAbout

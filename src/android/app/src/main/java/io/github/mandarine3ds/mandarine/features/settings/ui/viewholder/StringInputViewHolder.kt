@@ -9,6 +9,7 @@ import io.github.mandarine3ds.mandarine.databinding.ListItemSettingBinding
 import io.github.mandarine3ds.mandarine.features.settings.model.view.SettingsItem
 import io.github.mandarine3ds.mandarine.features.settings.model.view.StringInputSetting
 import io.github.mandarine3ds.mandarine.features.settings.ui.SettingsAdapter
+import io.github.mandarine3ds.mandarine.utils.ViewUtils.setVisible
 
 class StringInputViewHolder(val binding: ListItemSettingBinding, adapter: SettingsAdapter) :
     SettingViewHolder(binding.root, adapter) {
@@ -18,13 +19,19 @@ class StringInputViewHolder(val binding: ListItemSettingBinding, adapter: Settin
         setting = item
         binding.textSettingName.setText(item.nameId)
         if (item.descriptionId != 0) {
-            binding.textSettingDescription.visibility = View.VISIBLE
+            binding.textSettingDescription.setVisible(true)
             binding.textSettingDescription.setText(item.descriptionId)
         } else {
-            binding.textSettingDescription.visibility = View.GONE
+            binding.textSettingDescription.setVisible(false)
         }
-        binding.textSettingValue.visibility = View.VISIBLE
+        binding.textSettingValue.setVisible(true)
         binding.textSettingValue.text = setting.setting?.valueAsString
+
+        binding.buttonClear.isEnabled = setting.isEditable
+        binding.buttonClear.setVisible(adapter.isClearable(setting))
+        binding.buttonClear.setOnClickListener {
+            adapter.onClearClick(setting)
+        }
     }
 
     override fun onClick(clicked: View) {

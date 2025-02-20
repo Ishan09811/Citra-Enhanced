@@ -26,6 +26,8 @@ public:
      */
     static FileType IdentifyType(FileUtil::IOFile& file);
 
+    static inline bool shouldApplyUpdate = true;
+
     FileType GetFileType() override {
         return IdentifyType(file);
     }

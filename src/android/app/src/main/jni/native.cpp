@@ -39,6 +39,7 @@
 #include "core/hle/service/am/am.h"
 #include "core/hle/service/nfc/nfc.h"
 #include "core/loader/loader.h"
+#include "core/loader/ncch.h"
 #include "core/savestate.h"
 #include "jni/android_common/android_common.h"
 #include "jni/applets/mii_selector.h"
@@ -65,6 +66,10 @@
 #if defined(ENABLE_VULKAN) && MANDARINE_ARCH(arm64)
 #include <adrenotools/driver.h>
 #endif
+
+namespace GameInfo {
+    extern bool ShouldApplyUpdate(JNIEnv* env, u64 program_id);
+}
 
 namespace {
 
@@ -133,7 +138,7 @@ static bool CheckMicPermission() {
                                                                IDCache::GetRequestMicPermission());
 }
 
-static Core::System::ResultStatus RunMandarine(const std::string& filepath, bool shouldApplyCustomSettings, std::string config_name) {
+static Core::System::ResultStatus RunMandarine(const std::string& filepath) {
     // Mandarine core only supports a single running instance
     std::scoped_lock lock(running_mutex);
 
@@ -176,13 +181,12 @@ static Core::System::ResultStatus RunMandarine(const std::string& filepath, bool
     FileUtil::SetCurrentRomPath(filepath);
     auto app_loader = Loader::GetLoader(filepath);
     if (app_loader) {
+        u64 program_id = 0;
+        app_loader->ReadProgramId(program_id);
+        Loader::AppLoader_NCCH::shouldApplyUpdate = GameInfo::ShouldApplyUpdate(IDCache::GetEnvForThread(), program_id);
         system.RegisterAppLoaderEarly(app_loader);
     }
-    if (shouldApplyCustomSettings) {
-        Config{config_name};
-    } else {
-        Config{};
-    }
+    Config{};
     system.ApplySettings();
     Settings::LogSettings();
 
@@ -656,11 +660,6 @@ void Java_io_github_mandarine3ds_mandarine_NativeLibrary_initialiseConfigFile(
     Config{};
 }
 
-void Java_io_github_mandarine3ds_mandarine_NativeLibrary_initialisePerGameConfigFile(
-    [[maybe_unused]] JNIEnv* env, [[maybe_unused]] jobject obj, jstring config_name) {
-    Config{GetJString(env, config_name)};
-}
-
 void Java_io_github_mandarine3ds_mandarine_NativeLibrary_createLogFile(
     [[maybe_unused]] JNIEnv* env, [[maybe_unused]] jobject obj) {
     Common::Log::Initialize();
@@ -678,13 +677,6 @@ void Java_io_github_mandarine3ds_mandarine_NativeLibrary_logUserDirectory(
 void Java_io_github_mandarine3ds_mandarine_NativeLibrary_reloadSettings(
     [[maybe_unused]] JNIEnv* env, [[maybe_unused]] jobject obj) {
     Config{};
-    Core::System& system{Core::System::GetInstance()};
-    system.ApplySettings();
-}
-
-void Java_io_github_mandarine3ds_mandarine_NativeLibrary_reloadPerGameSettings(
-    [[maybe_unused]] JNIEnv* env, [[maybe_unused]] jobject obj, jstring config_name) {
-    Config{GetJString(env, config_name)};
     Core::System& system{Core::System::GetInstance()};
     system.ApplySettings();
 }
@@ -708,7 +700,7 @@ jdoubleArray Java_io_github_mandarine3ds_mandarine_NativeLibrary_getPerfStats(
 }
 
 void Java_io_github_mandarine3ds_mandarine_NativeLibrary_run(
-    JNIEnv* env, [[maybe_unused]] jobject obj, jstring j_path, jboolean should_apply_custom_settings, jstring config_name) {
+    JNIEnv* env, [[maybe_unused]] jobject obj, jstring j_path) {
     const std::string path = GetJString(env, j_path);
 
     if (!stop_run) {
@@ -716,7 +708,7 @@ void Java_io_github_mandarine3ds_mandarine_NativeLibrary_run(
         running_cv.notify_all();
     }
 
-    const Core::System::ResultStatus result{RunMandarine(path, static_cast<bool>(should_apply_custom_settings), GetJString(env, config_name))};
+    const Core::System::ResultStatus result{RunMandarine(path)};
     if (result != Core::System::ResultStatus::Success) {
         env->CallStaticVoidMethod(IDCache::GetNativeLibraryClass(),
                                   IDCache::GetExitEmulationActivity(), static_cast<int>(result));

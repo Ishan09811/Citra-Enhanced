@@ -10,6 +10,7 @@ import io.github.mandarine3ds.mandarine.features.settings.model.view.SettingsIte
 import io.github.mandarine3ds.mandarine.features.settings.model.view.SingleChoiceSetting
 import io.github.mandarine3ds.mandarine.features.settings.model.view.StringSingleChoiceSetting
 import io.github.mandarine3ds.mandarine.features.settings.ui.SettingsAdapter
+import io.github.mandarine3ds.mandarine.utils.ViewUtils.setVisible
 
 class SingleChoiceViewHolder(val binding: ListItemSettingBinding, adapter: SettingsAdapter) :
     SettingViewHolder(binding.root, adapter) {
@@ -19,12 +20,12 @@ class SingleChoiceViewHolder(val binding: ListItemSettingBinding, adapter: Setti
         setting = item
         binding.textSettingName.setText(item.nameId)
         if (item.descriptionId != 0) {
-            binding.textSettingDescription.visibility = View.VISIBLE
+            binding.textSettingDescription.setVisible(true)
             binding.textSettingDescription.setText(item.descriptionId)
         } else {
-            binding.textSettingDescription.visibility = View.GONE
+            binding.textSettingDescription.setVisible(false)
         }
-        binding.textSettingValue.visibility = View.VISIBLE
+        binding.textSettingValue.setVisible(true)
         binding.textSettingValue.text = getTextSetting()
 
         if (setting.isEditable) {
@@ -35,6 +36,11 @@ class SingleChoiceViewHolder(val binding: ListItemSettingBinding, adapter: Setti
             binding.textSettingName.alpha = 0.5f
             binding.textSettingDescription.alpha = 0.5f
             binding.textSettingValue.alpha = 0.5f
+        }
+        binding.buttonClear.isEnabled = setting.isEditable
+        binding.buttonClear.setVisible(adapter.isClearable(setting))
+        binding.buttonClear.setOnClickListener {
+            adapter.onClearClick(setting)
         }
     }
 

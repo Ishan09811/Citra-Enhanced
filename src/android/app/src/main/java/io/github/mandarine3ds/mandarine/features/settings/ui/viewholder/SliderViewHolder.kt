@@ -13,6 +13,7 @@ import io.github.mandarine3ds.mandarine.features.settings.model.ScaledFloatSetti
 import io.github.mandarine3ds.mandarine.features.settings.model.view.SettingsItem
 import io.github.mandarine3ds.mandarine.features.settings.model.view.SliderSetting
 import io.github.mandarine3ds.mandarine.features.settings.ui.SettingsAdapter
+import io.github.mandarine3ds.mandarine.utils.ViewUtils.setVisible
 
 class SliderViewHolder(val binding: ListItemSettingBinding, adapter: SettingsAdapter) :
     SettingViewHolder(binding.root, adapter) {
@@ -22,12 +23,12 @@ class SliderViewHolder(val binding: ListItemSettingBinding, adapter: SettingsAda
         setting = item as SliderSetting
         binding.textSettingName.setText(item.nameId)
         if (item.descriptionId != 0) {
-            binding.textSettingDescription.visibility = View.VISIBLE
+            binding.textSettingDescription.setVisible(true)
             binding.textSettingDescription.setText(item.descriptionId)
         } else {
-            binding.textSettingDescription.visibility = View.GONE
+            binding.textSettingDescription.setVisible(false)
         }
-        binding.textSettingValue.visibility = View.VISIBLE
+        binding.textSettingValue.setVisible(true)
         binding.textSettingValue.text = when (setting.setting) {
             is ScaledFloatSetting ->
                 "${(setting.setting as ScaledFloatSetting).float.toInt()}${setting.units}"
@@ -43,6 +44,12 @@ class SliderViewHolder(val binding: ListItemSettingBinding, adapter: SettingsAda
             binding.textSettingName.alpha = 0.5f
             binding.textSettingDescription.alpha = 0.5f
             binding.textSettingValue.alpha = 0.5f
+        }
+
+        binding.buttonClear.isEnabled = setting.isEditable
+        binding.buttonClear.setVisible(adapter.isClearable(setting))
+        binding.buttonClear.setOnClickListener {
+            adapter.onClearClick(setting)
         }
     }
 

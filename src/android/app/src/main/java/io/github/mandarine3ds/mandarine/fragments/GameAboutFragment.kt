@@ -248,53 +248,71 @@ class GameAboutFragment : Fragment() {
                 SubmenuGameAbout(
                     R.string.info,
                     R.string.info_description,
-                    R.drawable.ic_info_outline
-                ) {
-                    val action = GameAboutFragmentDirections
-                        .actionGameAboutFragmentToGameInfoFragment(args.game)
-                    binding.root.findNavController().navigate(action)
-                }
+                    R.drawable.ic_info_outline,
+                    action = {
+                        val action = GameAboutFragmentDirections
+                            .actionGameAboutFragmentToGameInfoFragment(args.game)
+                        binding.root.findNavController().navigate(action)
+                    }
+		)
             )
 	    add(
                 SubmenuGameAbout(
                     R.string.settings,
                     R.string.per_game_settings_description,
-                    R.drawable.ic_settings
-                ) {
-                    SettingsActivity.launch(requireContext(), SettingsFile.FILE_NAME_CONFIG, String.format("%016X", args.game.titleId))
-                }
+                    R.drawable.ic_settings,
+                    action = {
+                        SettingsActivity.launch(requireContext(), SettingsFile.FILE_NAME_CONFIG, String.format("%016X", args.game.titleId))
+                    },
+		    longAction = {
+			MessageDialogFragment.newInstance(
+                            requireActivity(),
+                            title = R.string.settings_management,
+			    positiveButtonTitle = R.string.misc_import,
+			    negativeButtonTitle = R.string.export,
+			    neutralButtonTitle = android.R.string.cancel,
+                            positiveAction = { 
+			        importSettings.launch(arrayOf("*/*")) 
+			    },
+			    negativeAction = { exportSettings.launch("config.ini") },
+			    neutralAction = { null }
+                        ).show(parentFragmentManager, MessageDialogFragment.TAG)    
+		    }
+		)
             )
             add(
                 SubmenuGameAbout(
                     R.string.add_ons,
                     R.string.add_ons_description,
-                    R.drawable.ic_edit
-                ) {
-                    val action = GameAboutFragmentDirections
-                        .actionGameAboutFragmentToAddonsFragment(args.game)
-                    binding.root.findNavController().navigate(action)
-                }
+                    R.drawable.ic_edit,
+                    action = {
+                        val action = GameAboutFragmentDirections
+                            .actionGameAboutFragmentToAddonsFragment(args.game)
+                        binding.root.findNavController().navigate(action)
+                    }
+		)
             )
 	    add(
                 SubmenuGameAbout(
                     R.string.save_data,
                     R.string.save_data_description,
                     R.drawable.ic_save,
-                ) {
-                    MessageDialogFragment.newInstance(
-                        requireActivity(),
-                        title = R.string.save_management,
-			positiveButtonTitle = R.string.misc_import,
-			negativeButtonTitle = R.string.export,
-			neutralButtonTitle = android.R.string.cancel,
-                        positiveAction = { 
-			    SaveManagementUtils.importSave(documentPicker) 
-			    homeViewModel.reloadGameAboutList(true)
-			},
-			negativeAction = { SaveManagementUtils.exportSave(startForResultExportSave, String.format("%016X", args.game.titleId), "${args.game.title} (v1.0) [${String.format("%016X", args.game.titleId)}]") },
-			neutralAction = { null }
-                    ).show(parentFragmentManager, MessageDialogFragment.TAG)
-                }
+                    action = {
+                        MessageDialogFragment.newInstance(
+                            requireActivity(),
+                            title = R.string.save_management,
+			    positiveButtonTitle = R.string.misc_import,
+			    negativeButtonTitle = R.string.export,
+			    neutralButtonTitle = android.R.string.cancel,
+                            positiveAction = { 
+			        SaveManagementUtils.importSave(documentPicker) 
+			        homeViewModel.reloadGameAboutList(true)
+			    },
+			    negativeAction = { SaveManagementUtils.exportSave(startForResultExportSave, String.format("%016X", args.game.titleId), "${args.game.title} (v1.0) [${String.format("%016X", args.game.titleId)}]") },
+			    neutralAction = { null }
+                        ).show(parentFragmentManager, MessageDialogFragment.TAG)
+                    }
+		)
             )
 	    if (SaveManagementUtils.saveFolderGameExists(String.format("%016X", args.game.titleId))) {
                 add(
@@ -355,6 +373,22 @@ class GameAboutFragment : Fragment() {
             adapter = GameAboutAdapter(viewLifecycleOwner, properties)
         }
     }
+
+    val importSettings =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
+            if (result == null) {
+                return@registerForActivityResult
+            }
+            SettingsFile.importSettings(String.format("%016X", args.game.titleId), result)
+	}
+
+    val exportSettings =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { result ->
+            if (result == null) {
+                return@registerForActivityResult
+            }
+            SettingsFile.exportSettings(String.format("%016X", args.game.titleId), result)
+	} 
 
     private fun showShortcutDialog(game: Game) {
 	(dialogShortcutBinding.root.parent as? ViewGroup)?.removeView(dialogShortcutBinding.root)
@@ -450,11 +484,10 @@ class GameAboutFragment : Fragment() {
                 bottom = barInsets.bottom + fabSpacing
             )
 
-            /*binding.layoutAll.updatePadding(
-                top = barInsets.top,
+            binding.listAll.updatePadding(
                 bottom = barInsets.bottom +
                     resources.getDimensionPixelSize(R.dimen.spacing_bottom_list_fab)
-            )*/
+            )
 
             windowInsets
         }

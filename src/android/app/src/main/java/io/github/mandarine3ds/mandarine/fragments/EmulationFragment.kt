@@ -156,7 +156,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
 
         // So this fragment doesn't restart on configuration changes; i.e. rotation.
         retainInstance = true
-        emulationState = EmulationState(game.path, args.shouldApplyCustomSettings, game.titleId)
+        emulationState = EmulationState(game.path)
         emulationActivity = requireActivity() as EmulationActivity
         screenAdjustmentUtil = ScreenAdjustmentUtil(
             requireContext(),
@@ -1334,7 +1334,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
         }
     }
 
-    private class EmulationState(private val gamePath: String, private val shouldApplyCustomSettings: Boolean, private val titleId: Long) {
+    private class EmulationState(private val gamePath: String) {
         private var state: State
         private var surface: Surface? = null
 
@@ -1449,7 +1449,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                 State.STOPPED -> {
                     Thread({
                         Log.debug("[EmulationFragment] Starting emulation thread.")
-                        NativeLibrary.run(gamePath, shouldApplyCustomSettings, String.format("%016X", titleId))
+                        NativeLibrary.run(gamePath)
                     }, "NativeEmulation").start()
                 }
 

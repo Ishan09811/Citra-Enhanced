@@ -52,6 +52,11 @@ class GameAboutAdapter(
                 submenuInfo.action.invoke()
             }
 
+            binding.root.setOnLongClickListener {
+                submenuInfo.longAction?.invoke()
+                true
+            }
+
             binding.title.setText(submenuInfo.titleId)
             binding.description.setText(submenuInfo.descriptionId)
             binding.icon.setImageDrawable(

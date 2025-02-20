@@ -13,6 +13,8 @@ import kotlinx.serialization.json.Json
 import io.github.mandarine3ds.mandarine.MandarineApplication
 import io.github.mandarine3ds.mandarine.model.Mod
 import io.github.mandarine3ds.mandarine.model.Addon
+import io.github.mandarine3ds.mandarine.model.Update
+import io.github.mandarine3ds.mandarine.model.DLC
 import io.github.mandarine3ds.mandarine.model.Game
 import java.io.IOException
 
@@ -81,14 +83,30 @@ object AddonsHelper {
     }
 
     fun getAddons(game: Game = Game(filename = ""), titleId: Long = 0L): List<Addon> {
-        val mods = getMods()
+        val addons = getMods().toMutableList() as MutableList<Addon>
         val titleID = if (game.titleId != 0L) game.titleId else titleId
-        return mods.filter { mod ->  
-            mod.titleId.toInt() == titleID.toInt()
-        }
+        
+        if (FileUtil.isUpdateExists(String.format("%016X", game.titleId)))
+            addons.add(Update(titleId = game.titleId, enabled = preferences.getBoolean("${game.titleId}_Update_Enabled", true) ?: true))            
+        if (FileUtil.isDLCExists(String.format("%016X", game.titleId)))
+            addons.add(DLC(titleId = game.titleId, enabled = preferences.getBoolean("${game.titleId}_DLC_Enabled", true) ?: true)) 
+            
+        return addons.filter { addon ->  
+            addon.titleId.toInt() == titleID.toInt()
+        }.toList()
     }
 
     fun Addon.enable(value: Boolean) {
+        if (this.title == "DLC") {
+            preferences.edit().putBoolean("${this.titleId}_DLC_Enabled", value).apply()
+            return 
+        }
+
+        if (this.title == "Update") {
+            preferences.edit().putBoolean("${this.titleId}_Update_Enabled", value).apply()
+            return 
+        }
+            
         if (this is Mod) {
             val serializedMods = preferences.getStringSet(KEY_MODS, emptySet()) ?: emptySet()
             val mods = serializedMods.map { Json.decodeFromString<Mod>(it) }.toMutableList()
@@ -109,6 +127,17 @@ object AddonsHelper {
                     .apply()
             }
         }
+    }
+
+    fun Addon.delete(): Boolean {
+        if (this is Mod)
+            return FileUtil.deleteDir(this.installedPath)
+        if (this is Update)
+            return FileUtil.deleteUpdate(String.format("%016X", this.titleId))
+        if (this is DLC)
+            return FileUtil.deleteDLC(String.format("%016X", this.titleId))
+
+        return false
     }
 
     enum class AddonInstallResult {

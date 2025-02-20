@@ -11,10 +11,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import io.github.mandarine3ds.mandarine.utils.AddonsHelper
 import io.github.mandarine3ds.mandarine.utils.AddonsHelper.AddonInstallResult
+import io.github.mandarine3ds.mandarine.ui.main.MainActivity
+import io.github.mandarine3ds.mandarine.utils.FileBrowserHelper
+import io.github.mandarine3ds.mandarine.utils.FileUtil
 import io.github.mandarine3ds.mandarine.model.Game
 import io.github.mandarine3ds.mandarine.model.Addon
+import io.github.mandarine3ds.mandarine.MandarineApplication
 import java.util.concurrent.atomic.AtomicBoolean
 
 class AddonViewModel : ViewModel() {
@@ -22,6 +28,8 @@ class AddonViewModel : ViewModel() {
     val addonList get() = _addonList.asStateFlow()
     private val _dialogState = MutableStateFlow<DialogEvent>(DialogEvent.None)
     val dialogState = _dialogState.asStateFlow()
+    private val _shouldShowProgressDialog = MutableStateFlow(false)
+    val shouldShowProgressDialog get() = _shouldShowProgressDialog.asStateFlow()
 
     var game: Game? = null
 
@@ -58,19 +66,45 @@ class AddonViewModel : ViewModel() {
         }
     }
 
-    fun installMod(uri: Uri) { 
+    fun installAddon(uris: List<Uri>) { 
         val currentGame = game ?: return
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val result = AddonsHelper.installMod(uri, currentGame)
-                when (result) {
-                    AddonInstallResult.Success -> refreshAddons()
-                    AddonInstallResult.UnknownError -> showErrorDialog("An unknown error occurred while installing addon")
-                    AddonInstallResult.InvalidArchive -> showErrorDialog("Selected addon file isn't supported")
-                    AddonInstallResult.AlreadyInstalled -> showErrorDialog("Selected addon file is already installed")
-                    else -> _dialogState.value = DialogEvent.None
+                val ciaUris = uris.filter { FileUtil.getExtension(it) == "cia" }
+                if (ciaUris.isNotEmpty()) {
+                    val selectedFiles = FileBrowserHelper.getSelectedFiles(uris, MandarineApplication.appContext, listOf("cia"))
+                    MainActivity.InstallCIAFiles(selectedFiles)          
+                }
+                val zipUris = uris.filter { FileUtil.getExtension(it) == "zip" }
+                if (zipUris.isEmpty()) return@withContext
+                for (uri in zipUris) {
+                    _dialogState.value = DialogEvent.ShowProgressDialog()
+                    val result = AddonsHelper.installMod(uri, currentGame)
+                    _dialogState.value = DialogEvent.None
+                    when (result) {
+                        AddonInstallResult.Success -> refreshAddons()
+                        AddonInstallResult.UnknownError -> {
+                            showErrorDialog("An unknown error occurred while installing ${FileUtil.getFilename(uri)} addon")
+                            waitForDialogToClose()
+                        }
+                        AddonInstallResult.InvalidArchive -> {
+                            showErrorDialog("${FileUtil.getFilename(uri)} addon file isn't supported")
+                            waitForDialogToClose()
+                        }
+                        AddonInstallResult.AlreadyInstalled -> {
+                            showErrorDialog("${FileUtil.getFilename(uri)} addon file is already installed")
+                            waitForDialogToClose()
+                        }
+                        else -> {}
+                    }
                 }
             }
+        }
+    }
+
+    suspend fun waitForDialogToClose() {
+        while (_dialogState.value != DialogEvent.None) {
+            delay(100)
         }
     }
         

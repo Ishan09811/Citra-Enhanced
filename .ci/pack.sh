@@ -21,14 +21,14 @@ function pack_artifacts() {
     # Set up root directory for archive.
     mkdir "$REV_NAME"
     if [ -f "$ARTIFACTS_PATH" ]; then
-        mv "$ARTIFACTS_PATH" "$REV_NAME"
+        mv "$ARTIFACTS_PATH" "$REV_NAME" 2>/dev/null || true
 
         # Use file extension to differentiate archives.
         FILENAME=$(basename "$ARTIFACT")
         EXTENSION="${FILENAME##*.}"
         ARCHIVE_NAME="$REV_NAME.$EXTENSION"
     else
-        mv "$ARTIFACTS_PATH"/* "$REV_NAME"
+        mv "$ARTIFACTS_PATH"/* "$REV_NAME" 2>/dev/null || true
 
         ARCHIVE_NAME="$REV_NAME"
     fi
@@ -50,18 +50,26 @@ function pack_artifacts() {
 }
 
 if [ -n "$UNPACKED" ]; then
-    # Copy the artifacts to be uploaded unpacked.
-    for ARTIFACT in build/bundle/*; do
-        FILENAME=$(basename "$ARTIFACT")
-        EXTENSION="${FILENAME##*.}"
+    if [ -d "build/bundle" ]; then
+        for ARTIFACT in build/bundle/*; do
+            FILENAME=$(basename "$ARTIFACT")
+            EXTENSION="${FILENAME##*.}"
 
-        mv "$ARTIFACT" "artifacts/$REV_NAME.$EXTENSION"
-    done
+            mv "$ARTIFACT" "artifacts/$REV_NAME.$EXTENSION" 2>/dev/null || true
+        done
+    elif [ "$OS" = "android" ]; then
+        APK_PATH=$(find build -type f -name "*.apk" | head -n 1)
+        if [ -n "$APK_PATH" ]; then
+            mv "$APK_PATH" "artifacts/$REV_NAME.apk" 2>/dev/null || true
+        fi
+    fi
 elif [ -n "$PACK_INDIVIDUALLY" ]; then
     # Pack and upload the artifacts one-by-one.
-    for ARTIFACT in build/bundle/*; do
-        pack_artifacts "$ARTIFACT"
-    done
+    if [ -d "build/bundle" ]; then
+        for ARTIFACT in build/bundle/*; do
+            pack_artifacts "$ARTIFACT"
+        done
+    fi
 else
     # Pack all of the artifacts into a single archive.
     pack_artifacts build/bundle

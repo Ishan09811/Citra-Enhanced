@@ -17,10 +17,15 @@ import io.github.mandarine3ds.mandarine.features.settings.model.ScaledFloatSetti
 import io.github.mandarine3ds.mandarine.features.settings.model.SettingSection
 import io.github.mandarine3ds.mandarine.features.settings.model.Settings.SettingsSectionMap
 import io.github.mandarine3ds.mandarine.features.settings.model.StringSetting
+import io.github.mandarine3ds.mandarine.features.settings.model.Settings
 import io.github.mandarine3ds.mandarine.features.settings.ui.SettingsActivityView
 import io.github.mandarine3ds.mandarine.utils.BiMap
 import io.github.mandarine3ds.mandarine.utils.DirectoryInitialization.userDirectory
 import io.github.mandarine3ds.mandarine.utils.Log
+import io.github.mandarine3ds.mandarine.utils.FileUtil.outputStream
+import io.github.mandarine3ds.mandarine.utils.FileUtil.inputStream
+import io.github.mandarine3ds.mandarine.utils.FileUtil.asDocumentFile
+import io.github.mandarine3ds.mandarine.utils.FileUtil
 import io.github.mandarine3ds.mandarine.NativeLibrary
 import org.ini4j.Wini
 import java.io.BufferedReader
@@ -185,7 +190,7 @@ object SettingsFile {
     fun saveCustomGameSettings(
         gameId: String,
         sections: HashMap<String, SettingSection?>,
-        view: SettingsActivityView
+        view: SettingsActivityView? = null
     ) {
         val ini = getCustomGameSettingsFile(gameId)
         try {
@@ -194,9 +199,7 @@ object SettingsFile {
             val writer = Wini(inputStream)
         
             for ((key, section) in sections) {
-                if (section != null) {
-                    writeSection(writer, section)
-                }
+                writeSection(writer, section!!)
             }
 
             inputStream?.close()
@@ -206,11 +209,33 @@ object SettingsFile {
             outputStream?.close()
         } catch (e: Exception) {
             Log.error("[SettingsFile] Error saving custom game settings for: $gameId.ini: ${e.message}")
-            view.showToastMessage(
+            view?.showToastMessage(
                 MandarineApplication.appContext
                     .getString(R.string.error_saving, gameId, e.message), false
             )
         }
+    }
+
+    fun exportSettings(titleId: String? = null, uri: Uri) {
+        if (titleId != null) {
+            uri.outputStream()?.use { output ->
+                getCustomGameSettingsFile(titleId).uri!!.inputStream()?.use { it.copyTo(output) }
+            }
+        } else {
+            uri.outputStream()?.use { output ->
+                getSettingsFile("config").uri!!.inputStream()?.use { it.copyTo(output) }
+            }
+        }
+    }
+
+    fun importSettings(titleId: String? = null, uri: Uri): Boolean {
+        if (FileUtil.getExtension(uri) != "ini") return false
+        if (titleId != null) {
+            Settings().importSettings(titleId, readFile(uri.asDocumentFile()!!, true, null))
+        } else {
+            Settings().importSettings(null, readFile(uri.asDocumentFile()!!, false, null))
+        }
+        return true
     }
 
     private fun mapSectionNameFromIni(generalSectionName: String): String? {
@@ -248,7 +273,6 @@ object SettingsFile {
         val root = DocumentFile.fromTreeUri(MandarineApplication.appContext, Uri.parse(userDirectory))
         val configDirectory = root!!.findFile("config")
         var configFile = configDirectory!!.findFile("$gameId.ini") ?: configDirectory!!.createFile("application/octet-stream", "$gameId.ini")
-        NativeLibrary.initialisePerGameConfigFile(gameId)
         return configFile!!
     }
 
@@ -322,15 +346,19 @@ object SettingsFile {
      * @param section A section containing settings to be written to the file.
      */
     private fun writeSection(parser: Wini, section: SettingSection) {
-        // Write the section header.
         val header = section.name
+        val iniSection = parser.get(header)
+        if (iniSection != null) {
+            val existingKeys = iniSection.keys.toList() // Convert to list to avoid ConcurrentModificationException
+            for (key in existingKeys) {
+                if (!section.settings.containsKey(key)) {
+                    iniSection.remove(key)
+                }
+            }
+        }
 
-        // Write this section's values.
-        val settings = section.settings
-        val keySet: Set<String> = settings.keys
-        for (key in keySet) {
-            val setting = settings[key]
-            parser.put(header, setting!!.key, setting.valueAsString)
+        for ((key, setting) in section.settings) {
+            parser.put(header, key, setting.valueAsString)
         }
     }
 }

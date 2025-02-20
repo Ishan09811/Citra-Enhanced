@@ -13,6 +13,7 @@ import io.github.mandarine3ds.mandarine.features.settings.model.BooleanSetting
 import io.github.mandarine3ds.mandarine.features.settings.model.FloatSetting
 import io.github.mandarine3ds.mandarine.features.settings.model.IntSetting
 import io.github.mandarine3ds.mandarine.features.settings.model.ScaledFloatSetting
+import io.github.mandarine3ds.mandarine.features.settings.model.view.SettingsItem
 import java.util.TreeMap
 
 class Settings {
@@ -63,7 +64,8 @@ class Settings {
 
     private fun loadMandarineSettings(view: SettingsActivityView?) {
         for ((fileName) in configFileSectionsMap) {
-            sections.putAll(SettingsFile.readFile(fileName, view))
+            val readResult = SettingsFile.readFile(fileName, view)
+            sections.putAll(readResult)
         }
     }
 
@@ -74,31 +76,47 @@ class Settings {
 
     private fun mergeSections(updatedSections: HashMap<String, SettingSection?>) {
         for ((key, updatedSection) in updatedSections) {
-            if (sections.containsKey(key)) {
-                val originalSection = sections[key]
-            
-                if (originalSection != null && updatedSection != null) {
-                    for ((settingKey, settingValue) in updatedSection.settings) {
-                        if (originalSection.settings.containsKey(settingKey)) {
-                            val globalValue = originalSection.settings[settingKey]
-                            if (globalValue != settingValue) {
-                                originalSection.settings[settingKey] = settingValue
-                            }
-                        } else {
-                            originalSection.settings[settingKey] = settingValue
-                        }
+            val originalSection = sections[key] ?: SettingSection(key).also { sections[key] = it }
+
+            if (updatedSection != null) {
+                for (setting in updatedSection.settings.values) {
+                    originalSection.putSetting(setting)
+                }
+            }
+            if (updatedSection != null) {
+                for (globalSetting in originalSection.settings.values) {
+                    if (!updatedSection.settings.containsKey(globalSetting.key)) {
+                        originalSection.putSetting(globalSetting, isGlobal = true)
                     }
                 }
-            } else {
-                sections[key] = updatedSection
             }
         }
     }
 
     fun loadSettings(gameId: String, view: SettingsActivityView) {
         this.gameId = gameId
-        clearMemorySettings()
         loadSettings(view)
+    }
+
+    fun importSettings(titleId: String?, input: HashMap<String, SettingSection?>) {
+        if (titleId == null) {
+            for ((fileName, sectionNames) in configFileSectionsMap.entries) {
+                val iniSections = TreeMap<String, SettingSection?>()
+                for (section in sectionNames) {
+                    iniSections[section] = input[section]
+                }
+                SettingsFile.saveFile(fileName, iniSections, null)
+            }
+        } else {
+            val gameSections = HashMap<String, SettingSection?>()
+            for ((key, section) in input) {
+                if (section != null) {
+                    gameSections[key] = section
+                }
+            }
+            SettingsFile.saveCustomGameSettings(titleId!!, gameSections, null)
+        }
+        MandarineApplication.documentsTree.refreshDirectory("/config")
     }
 
     fun saveSettings(view: SettingsActivityView) {
@@ -118,11 +136,47 @@ class Settings {
             val gameSections = HashMap<String, SettingSection?>()
             for ((key, section) in sections) {
                 if (section != null) {
-                    gameSections[key] = section
+                    val filteredSection = SettingSection(key)
+                    for (setting in section.settings.values) {
+                        if (!section.isGlobalSetting(setting.key!!)) {
+                            filteredSection.putSetting(setting)
+                        }
+                    }
+                    gameSections[key] = filteredSection
                 }
             }
-            SettingsFile.saveCustomGameSettings(gameId!!, gameSections, view)
+            SettingsFile.saveCustomGameSettings(gameId!!, gameSections, view!!)
         }
+        MandarineApplication.documentsTree.refreshDirectory("/config")
+    }
+
+    fun clearPerGameSetting(item: SettingsItem, view: SettingsActivityView) {
+        if (TextUtils.isEmpty(gameId)) return
+        sections[item.setting!!.section!!]?.putSetting(item.setting!!, isGlobal = true)
+        saveSettings(view)
+        loadSettings()
+    }
+
+    fun isSettingClearable(setting: AbstractSetting?): Boolean {
+        if (TextUtils.isEmpty(gameId)) return false
+        
+        setting ?: return false
+        setting!!.key ?: return false
+        
+        var foundNonGlobal = false
+
+        for (section in sections.values) {
+            val existingSetting = section?.getSetting(setting!!.key!!)
+            if (existingSetting != null) {
+                if (section.isGlobalSetting(setting!!.key!!)) {
+                    return false
+                } else {
+                    foundNonGlobal = true
+                }
+            }
+        }
+
+        return foundNonGlobal
     }
 
     fun saveSetting(setting: AbstractSetting, filename: String) {

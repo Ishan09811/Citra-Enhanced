@@ -271,11 +271,13 @@ ResultStatus AppLoader_NCCH::Load(std::shared_ptr<Kernel::Process>& process) {
 
     LOG_INFO(Loader, "Program ID: {}", program_id);
 
-    update_ncch.OpenFile(Service::AM::GetTitleContentPath(Service::FS::MediaType::SDMC,
+    if (shouldApplyUpdate) {
+        update_ncch.OpenFile(Service::AM::GetTitleContentPath(Service::FS::MediaType::SDMC,
                                                           ncch_program_id | UPDATE_MASK));
-    result = update_ncch.Load();
-    if (result == ResultStatus::Success) {
-        overlay_ncch = &update_ncch;
+         result = update_ncch.Load();
+         if (result == ResultStatus::Success) {
+             overlay_ncch = &update_ncch;
+         }
     }
 
     if (auto room_member = Network::GetRoomMember().lock()) {

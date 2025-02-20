@@ -724,6 +724,22 @@ object FileUtil {
         return true
     }
 
+    fun isUpdateExists(titleId: String): Boolean {
+        return MandarineApplication.documentsTree.exists("/sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/0004000e/${titleId.lowercase().substring(8)}")
+    }
+
+    fun deleteUpdate(titleId: String): Boolean {
+        return MandarineApplication.documentsTree.deleteDocument("/sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/0004000e/${titleId.lowercase().substring(8)}")
+    }
+
+    fun isDLCExists(titleId: String): Boolean {
+        return MandarineApplication.documentsTree.exists("/sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/0004008C/${titleId.lowercase().substring(8)}")
+    }
+
+    fun deleteDLC(titleId: String): Boolean {
+        return MandarineApplication.documentsTree.deleteDocument("/sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/0004008C/${titleId.lowercase().substring(8)}")
+    }
+
     @Throws(IOException::class)
     fun getStringFromFile(file: File): String =
         String(file.readBytes(), StandardCharsets.UTF_8)

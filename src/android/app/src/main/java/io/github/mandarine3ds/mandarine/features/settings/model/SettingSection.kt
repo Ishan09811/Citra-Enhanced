@@ -10,14 +10,20 @@ package io.github.mandarine3ds.mandarine.features.settings.model
  */
 class SettingSection(val name: String) {
     val settings = HashMap<String, AbstractSetting>()
+    private val globalSettings = HashMap<String, AbstractSetting>()
 
     /**
      * Convenience method; inserts a value directly into the backing HashMap.
      *
      * @param setting The Setting to be inserted.
      */
-    fun putSetting(setting: AbstractSetting) {
+    fun putSetting(setting: AbstractSetting, isGlobal: Boolean = false) {
         settings[setting.key!!] = setting
+        if (isGlobal) {
+            globalSettings[setting.key!!] = setting
+        } else {
+            if (isGlobalSetting(setting.key!!)) globalSettings.remove(setting.key!!)
+        }
     }
 
     /**
@@ -28,6 +34,10 @@ class SettingSection(val name: String) {
      */
     fun getSetting(key: String): AbstractSetting? {
         return settings[key]
+    }
+
+    fun isGlobalSetting(key: String): Boolean {
+        return globalSettings.containsKey(key)
     }
 
     fun mergeSection(settingSection: SettingSection) {

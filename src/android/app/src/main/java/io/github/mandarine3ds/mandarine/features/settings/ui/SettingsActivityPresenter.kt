@@ -65,10 +65,10 @@ class SettingsActivityPresenter(private val activityView: SettingsActivityView) 
             settings.saveSettings(activityView)
             SystemSaveGame.save()
             // Added to ensure that layout changes take effect as soon as settings window closes
-            if (!TextUtils.isEmpty(gameId)) NativeLibrary.reloadPerGameSettings(gameId) else NativeLibrary.reloadSettings()
+            NativeLibrary.reloadSettings()
             NativeLibrary.updateFramebuffer(NativeLibrary.isPortraitMode)
         }
-        if (!TextUtils.isEmpty(gameId)) NativeLibrary.reloadPerGameSettings(gameId) else NativeLibrary.reloadSettings()
+        NativeLibrary.reloadSettings()
     }
 
     fun onSettingChanged() {

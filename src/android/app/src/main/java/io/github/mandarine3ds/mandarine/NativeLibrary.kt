@@ -19,6 +19,7 @@ import android.widget.TextView
 import androidx.annotation.Keep
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
+import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.github.mandarine3ds.mandarine.activities.EmulationActivity
 import io.github.mandarine3ds.mandarine.utils.EmulationMenuSettings
@@ -102,9 +103,6 @@ object NativeLibrary {
     external fun onTouchMoved(xAxis: Float, yAxis: Float)
 
     external fun reloadSettings()
-
-    external fun reloadPerGameSettings(configName: String)
-
     external fun getTitleId(filename: String): Long
 
     external fun getIsSystemTitle(path: String): Boolean
@@ -118,14 +116,13 @@ object NativeLibrary {
 
     // Create the config.ini file.
     external fun initialiseConfigFile()
-    external fun initialisePerGameConfigFile(configName: String)
     external fun createLogFile()
     external fun logUserDirectory(directory: String)
 
     /**
      * Begins emulation.
      */
-    external fun run(path: String, shouldApplyCustomSettings: Boolean = false, configName: String)
+    external fun run(path: String)
 
     // Surface Handling
     external fun surfaceChanged(surf: Surface)
@@ -692,6 +689,20 @@ object NativeLibrary {
             }
         }
         return modList.toList()
+    }
+
+    @Keep
+    @JvmStatic
+    fun shouldApplyUpdate(titleId: Long): Boolean {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(MandarineApplication.appContext)
+        return preferences.getBoolean("${titleId}_Update_Enabled", true) ?: true
+    }
+
+    @Keep
+    @JvmStatic
+    fun shouldApplyDLC(titleId: Long): Boolean {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(MandarineApplication.appContext)
+        return preferences.getBoolean("${titleId}_DLC_Enabled", true) ?: true
     }
 
     enum class CoreError {

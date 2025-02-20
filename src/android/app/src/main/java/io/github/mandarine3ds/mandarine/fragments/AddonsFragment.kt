@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -19,8 +20,10 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.lifecycle.lifecycleScope
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.transition.MaterialSharedAxis
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import kotlinx.coroutines.launch
 import io.github.mandarine3ds.mandarine.R
 import io.github.mandarine3ds.mandarine.adapters.AddonsAdapter
@@ -40,6 +43,8 @@ class AddonsFragment : Fragment() {
     private val addonViewModel: AddonViewModel by activityViewModels()
 
     private val args by navArgs<AddonsFragmentArgs>()
+
+    private var progressDialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,11 +76,11 @@ class AddonsFragment : Fragment() {
 
         binding.listAddons.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = AddonsAdapter()
+            adapter = AddonsAdapter(addonViewModel = addonViewModel)
         }
 
         addonViewModel.addonList.collect(viewLifecycleOwner) {
-            (binding.listAddons.adapter as AddonsAdapter).updateList(it)
+            (binding.listAddons.adapter as AddonsAdapter).submitList(it)
         }
 
         lifecycleScope.launchWhenStarted {
@@ -84,13 +89,23 @@ class AddonsFragment : Fragment() {
                     is DialogEvent.ShowErrorDialog -> {
                         showErrorDialog(event.message)
                     }
-                    DialogEvent.None -> Unit
+                    is DialogEvent.ShowProgressDialog -> {
+                        if (progressDialog == null) {
+                            initProgressDialog()
+                            progressDialog!!.show()
+                        } else progressDialog!!.show()
+                        progressDialog!!.findViewById<LinearProgressIndicator>(R.id.progress_bar)?.isIndeterminate = true  
+                        progressDialog!!.findViewById<TextView>(R.id.progress_text)?.visibility = View.GONE
+                    }
+                    DialogEvent.None -> {
+                        progressDialog?.dismiss()
+                    }
                 }
             }
         }
         
         binding.buttonInstall.setOnClickListener {
-            installAddon.launch(arrayOf("application/zip"))
+            installAddon.launch(arrayOf("*/*"))
         }
 
         setInsets()
@@ -110,6 +125,18 @@ class AddonsFragment : Fragment() {
         dialog.show()
     }
 
+    private fun initProgressDialog() {
+        progressDialog = MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Installing")
+                .setView(R.layout.dialog_progress_bar)
+                .setCancelable(false)
+                .create()
+        val progressBar = progressDialog!!.findViewById<LinearProgressIndicator>(R.id.progress_bar)
+        val progressText = progressDialog!!.findViewById<TextView>(R.id.progress_text)
+        progressText?.visibility = View.GONE  
+        progressBar?.isIndeterminate = true
+    }
+
     override fun onResume() {
         super.onResume()
         addonViewModel.refreshAddons()
@@ -121,11 +148,11 @@ class AddonsFragment : Fragment() {
     }
 
     val installAddon =
-        registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
+        registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { result ->
             if (result == null) {
                 return@registerForActivityResult
             }
-            addonViewModel.installMod(result)
+            addonViewModel.installAddon(result)
         }
 
     private fun setInsets() =

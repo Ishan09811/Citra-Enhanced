@@ -11,11 +11,30 @@
 #include "core/hle/service/am/am.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/loader/loader.h"
+#include "core/loader/ncch.h"
 #include "core/loader/smdh.h"
 #include "jni/android_common/android_common.h"
 #include "jni/id_cache.h"
 
-namespace {
+namespace GameInfo {
+
+JavaVM* g_javaVM = nullptr;
+
+
+bool ShouldApplyUpdate(JNIEnv* env, u64 program_id) {
+    if (!env) return false;
+
+    jclass nativeLibClass = env->FindClass("io/github/mandarine3ds/mandarine/NativeLibrary");
+    if (!nativeLibClass) return false;
+
+    jmethodID shouldApplyUpdateMethod = env->GetStaticMethodID(nativeLibClass, "shouldApplyUpdate", "(J)Z");
+    if (!shouldApplyUpdateMethod) return false;
+
+    jboolean result = env->CallStaticBooleanMethod(nativeLibClass, shouldApplyUpdateMethod, (jlong)program_id);
+
+    env->DeleteLocalRef(nativeLibClass);
+    return result;
+}
 
 std::vector<u8> GetSMDHData(const std::string& path) {
     std::unique_ptr<Loader::AppLoader> loader = Loader::GetLoader(path);
@@ -26,12 +45,24 @@ std::vector<u8> GetSMDHData(const std::string& path) {
     u64 program_id = 0;
     loader->ReadProgramId(program_id);
 
-    std::vector<u8> smdh = [program_id, &loader]() -> std::vector<u8> {
+    JNIEnv* env;
+    bool didAttach = false;
+    if (g_javaVM->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        g_javaVM->AttachCurrentThread(&env, nullptr);
+        didAttach = true;
+    }
+
+    std::vector<u8> smdh = [program_id, &loader, &env]() -> std::vector<u8> {
         std::vector<u8> original_smdh;
         loader->ReadIcon(original_smdh);
 
         if (program_id < 0x00040000'00000000 || program_id > 0x00040000'FFFFFFFF)
             return original_smdh;
+
+        if (!ShouldApplyUpdate(env, program_id)) {
+            Loader::AppLoader_NCCH::shouldApplyUpdate = false;
+            return original_smdh;
+        }
 
         std::string update_path = Service::AM::GetTitleContentPath(
             Service::FS::MediaType::SDMC, program_id + 0x0000000E'00000000);
@@ -49,6 +80,10 @@ std::vector<u8> GetSMDHData(const std::string& path) {
         return update_smdh;
     }();
 
+    if (didAttach) {
+        g_javaVM->DetachCurrentThread();
+    }
+
     return smdh;
 }
 
@@ -62,7 +97,12 @@ static Loader::SMDH* GetPointer(JNIEnv* env, jobject obj) {
 
 JNIEXPORT jlong JNICALL Java_io_github_mandarine3ds_mandarine_model_GameInfo_initialize(
     JNIEnv* env, jclass, jstring j_path) {
-    std::vector<u8> smdh_data = GetSMDHData(GetJString(env, j_path));
+    
+    if (!GameInfo::g_javaVM) {
+        env->GetJavaVM(&GameInfo::g_javaVM);
+    }
+    
+    std::vector<u8> smdh_data = GameInfo::GetSMDHData(GetJString(env, j_path));
 
     Loader::SMDH* smdh = nullptr;
     if (Loader::IsValidSMDH(smdh_data)) {

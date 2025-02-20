@@ -10,6 +10,7 @@ import io.github.mandarine3ds.mandarine.databinding.ListItemSettingSwitchBinding
 import io.github.mandarine3ds.mandarine.features.settings.model.view.SettingsItem
 import io.github.mandarine3ds.mandarine.features.settings.model.view.SwitchSetting
 import io.github.mandarine3ds.mandarine.features.settings.ui.SettingsAdapter
+import io.github.mandarine3ds.mandarine.utils.ViewUtils.setVisible
 
 class SwitchSettingViewHolder(val binding: ListItemSettingSwitchBinding, adapter: SettingsAdapter) :
     SettingViewHolder(binding.root, adapter) {
@@ -38,6 +39,11 @@ class SwitchSettingViewHolder(val binding: ListItemSettingSwitchBinding, adapter
         val textAlpha = if (setting.isEditable) 1f else 0.5f
         binding.textSettingName.alpha = textAlpha
         binding.textSettingDescription.alpha = textAlpha
+
+        binding.buttonClear.setVisible(adapter.isClearable(setting))
+        binding.buttonClear.setOnClickListener {
+            adapter.onClearClick(setting)
+        }
     }
 
     override fun onClick(clicked: View) {
