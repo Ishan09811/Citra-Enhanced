@@ -41,6 +41,7 @@ enum class BooleanSetting(
     CUSTOM_CPU_TICKS("custom_cpu_ticks", Settings.SECTION_CORE, false),
     USE_FRAME_LIMIT("use_frame_limit", Settings.SECTION_RENDERER, true),
     LINEAR_FILTERING("filter_mode", Settings.SECTION_RENDERER, true),
+    DISABLE_RIGHT_EYE_RENDER("disable_right_eye_render", Settings.SECTION_RENDERER, false),
     FORCE_HW_VERTEX_SHADERS("force_hw_vertex_shaders", Settings.SECTION_RENDERER, false),
     DISABLE_SURFACE_TEXTURE_COPY("disable_surface_texture_copy", Settings.SECTION_RENDERER, false),
     DISABLE_FLUSH_CPU_WRITE("disable_flush_cpu_write", Settings.SECTION_RENDERER, false),
