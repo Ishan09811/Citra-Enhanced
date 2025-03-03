@@ -116,7 +116,6 @@ class GameAboutFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        homeViewModel.setNavigationVisibility(visible = false, animated = true)
         homeViewModel.setStatusBarShadeVisibility(false)
 
         (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.toolbar)
