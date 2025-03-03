@@ -18,6 +18,8 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DiffUtil
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.github.mandarine3ds.mandarine.HomeNavigationDirections
@@ -37,7 +39,7 @@ import io.github.mandarine3ds.mandarine.viewholder.AbstractViewHolder
 class GameAdapter(
     private val activity: AppCompatActivity,
     private val filerGamesCallBack: ((Int, Int) -> Unit)? = null
-) : AbstractDiffAdapter<Game, GameAdapter.GameViewHolder>(exact = true),
+) : ListAdapter<GameListItem, RecyclerView.ViewHolder>(AsyncDifferConfig.Builder(DiffCallback()).build()),
     View.OnClickListener, View.OnLongClickListener {
 
     private var lastClickTime = 0L
@@ -60,9 +62,10 @@ class GameAdapter(
     override fun getItemViewType(position: Int): Int = when (getItem(position)) {
         is GameListItem.GameItem -> viewType
         is GameListItem.Separator -> SEPARATOR
+        else -> VIEW_TYPE_LIST
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GameViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
             SEPARATOR -> SeparatorViewHolder(
                 LayoutInflater.from(parent.context).inflate(R.layout.list_item_separator, parent, false)
@@ -82,6 +85,7 @@ class GameAdapter(
         when (val item = getItem(position)) {
             is GameListItem.GameItem -> (holder as GameViewHolder).bind(item.game)
             is GameListItem.Separator -> { }
+            else -> (holder as GameViewHolder).bind(item.game)
         }
     }
 
@@ -134,7 +138,7 @@ class GameAdapter(
     inner class GameViewHolder(
         private val binding: ViewBinding,
         private val viewType: Int
-    ) : AbstractViewHolder<Game>(binding) {
+    ) : RecyclerView.ViewHolder(binding.root) {
         lateinit var game: Game
 
         init {
@@ -148,6 +152,7 @@ class GameAdapter(
             when (viewType) {
                 VIEW_TYPE_LIST -> bindListView(binding as CardGameBinding, game)
                 VIEW_TYPE_GRID -> bindGridView(binding as CardGameBigBinding, game)
+                else -> bindListView(binding as CardGameBinding, game)
             }
         }
 
