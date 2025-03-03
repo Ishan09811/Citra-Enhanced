@@ -86,7 +86,7 @@ class GameAdapter(
         when (val item = getItem(position)) {
             is GameListItem.GameItem -> (holder as GameViewHolder).bind(item.game)
             is GameListItem.Separator -> { }
-            else -> (holder as GameViewHolder).bind(item.game)
+            else -> {}
         }
     }
 
@@ -148,7 +148,7 @@ class GameAdapter(
             binding.root.setOnLongClickListener(this@GameAdapter)
         }
 
-        override fun bind(game: Game) {
+        fun bind(game: Game) {
             this.game = game
             when (viewType) {
                 VIEW_TYPE_LIST -> bindListView(binding as CardGameBinding, game)
