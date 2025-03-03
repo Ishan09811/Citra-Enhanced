@@ -285,9 +285,6 @@ bool Config::GetBooleanSetting(const std::string& key, const bool placeholder) {
     jboolean result = env->CallStaticBooleanMethod(settingsClass, methodID, jKey);
     env->DeleteLocalRef(jKey);
     
-    if (!result) 
-        return placeholder;
-    
     return static_cast<bool>(result);
 }
 
