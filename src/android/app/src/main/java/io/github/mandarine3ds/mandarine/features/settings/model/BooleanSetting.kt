@@ -23,7 +23,7 @@ enum class BooleanSetting(
     SHOW_APP_RAM_USAGE("show_app_ram_usage", Settings.SECTION_LAYOUT, false),
     SHOW_SYSTEM_RAM_USAGE("show_system_ram_usage", Settings.SECTION_LAYOUT, false),
     SHOW_BAT_TEMPERATURE("show_bat_temperature", Settings.SECTION_LAYOUT, false),
-    OVERLAY_BACKGROUND("overlay_background", Settings.SECTION_LAYOUT, false);
+    OVERLAY_BACKGROUND("overlay_background", Settings.SECTION_LAYOUT, false),
     DEBUG_RENDERER("renderer_debug", Settings.SECTION_DEBUG, false),
     SHADERS_ACCURATE_MUL("shaders_accurate_mul", Settings.SECTION_RENDERER, false),
     DISK_SHADER_CACHE("use_disk_shader_cache", Settings.SECTION_RENDERER, true),
