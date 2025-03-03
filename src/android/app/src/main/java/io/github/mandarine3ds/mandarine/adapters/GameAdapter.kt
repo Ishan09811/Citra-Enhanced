@@ -69,9 +69,9 @@ class GameAdapter(
             )
             else -> GameViewHolder(
                 when (viewType) {
-                    VIEW_TYPE_LIST -> CardGameBinding.inflate(inflater, parent, false)
-                    VIEW_TYPE_GRID -> CardGameBigBinding.inflate(inflater, parent, false)
-                    else -> CardGameBigBinding.inflate(inflater, parent, false)
+                    VIEW_TYPE_LIST -> CardGameBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                    VIEW_TYPE_GRID -> CardGameBigBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                    else -> CardGameBigBinding.inflate(LayoutInflater.from(parent.context), parent, false)
                 },
                 viewType
             )
