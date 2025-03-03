@@ -342,6 +342,9 @@ float Config::GetFloatSetting(const std::string& key, const bool scaled, const f
     JNIEnv* env = IDCache::GetEnvForThread();
     jstring jKey = env->NewStringUTF(key.c_str());
 
+    if (!scaled)
+        return placeholder; // TODO: when adding any normal float setting also implement me
+
     jclass settingsClass = env->FindClass("io/github/mandarine3ds/mandarine/features/settings/model/NativeSettings");
     if (!settingsClass) {
         env->DeleteLocalRef(jKey);
