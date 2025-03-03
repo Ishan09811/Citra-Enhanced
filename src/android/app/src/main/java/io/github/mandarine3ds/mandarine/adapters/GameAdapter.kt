@@ -20,6 +20,8 @@ import androidx.navigation.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.AsyncDifferConfig
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.github.mandarine3ds.mandarine.HomeNavigationDirections
@@ -34,7 +36,6 @@ import androidx.viewbinding.ViewBinding
 import io.github.mandarine3ds.mandarine.databinding.CardGameBigBinding
 import io.github.mandarine3ds.mandarine.viewmodel.GamesViewModel
 import io.github.mandarine3ds.mandarine.model.GameListItem
-import io.github.mandarine3ds.mandarine.viewholder.AbstractViewHolder
 
 class GameAdapter(
     private val activity: AppCompatActivity,
