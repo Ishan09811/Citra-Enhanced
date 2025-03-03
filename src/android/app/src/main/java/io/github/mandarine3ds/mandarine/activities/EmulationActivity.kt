@@ -51,7 +51,6 @@ import io.github.mandarine3ds.mandarine.dialogs.NetPlayDialog
 import io.github.mandarine3ds.mandarine.features.settings.model.IntSetting
 import androidx.core.os.BundleCompat
 import io.github.mandarine3ds.mandarine.utils.PlayTimeTracker
-import io.github.mandarine3ds.mandarine.model.Game
 
 class EmulationActivity : AppCompatActivity() {
     private val preferences: SharedPreferences
